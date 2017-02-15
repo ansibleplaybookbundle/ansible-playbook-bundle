@@ -1,0 +1,6 @@
+.python-version
+*.egg-info/
+*.pyc
+ansibleapp-library/
+src/build/
+src/dist/

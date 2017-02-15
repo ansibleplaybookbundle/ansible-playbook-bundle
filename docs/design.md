@@ -3,35 +3,32 @@
 Example:
 
 ```yaml
----
-ansibleapps:
-  - id: c9e3348c-b6fd-45d6-b2ba-a13b41f0b6e3
-    name: fusor/etherpad-ansibleapp
-    description: Note taking web application
-    bindable: true
-    async: optional
-    parameters:
-      - name: hostport
-        description: The host TCP port as the external endpoint
-        type: int
-        default: 9001
-      - name: db_user
-        description: Database User
-        type: string
-      - name: db_pass
-        description: Database Password
-        type: string
-      - name: db_name
-        description: Database Name
-        type: string
-      - name: db_host
-        description: Database service hostname/ip
-        default: mariadb
-        type: string
-      - name: db_port
-        description: Database service port
-        type: int
-        default: 3306
+name: fusor/etherpad-ansibleapp
+description: Note taking web application
+bindable: true
+async: optional
+parameters:
+  - name: hostport
+    description: The host TCP port as the external endpoint
+    type: int
+    default: 9001
+  - name: db_user
+    description: Database User
+    type: string
+  - name: db_pass
+    description: Database Password
+    type: string
+  - name: db_name
+    description: Database Name
+    type: string
+  - name: db_host
+    description: Database service hostname/ip
+    default: mariadb
+    type: string
+  - name: db_port
+    description: Database service port
+    type: int
+    default: 3306
 ```
 
 > TODO: Explain specfile base64 encoding and label stamp
@@ -67,7 +64,7 @@ One of the 4 possible actions an ansible app can take. At a minimum, an ansiblea
 must implement provision and deprovision.
 
 ```
-* provisoin
+* provision
 * deprovision
 * bind
 * unbind
