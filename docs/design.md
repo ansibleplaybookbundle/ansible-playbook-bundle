@@ -42,14 +42,14 @@ ansibleapps:
 
 **ParameterObject**
 
-Field Name | Description
----|---
-name | **Required.** The name of the parameter.
-description | **Required.** A human readable description of the parameter.
-type | **Required** Type of parameter. `bool`, `int`, `float`, `string`, are valid
-default | **Optional** An optional default value for the parameter.
+Field Name | Type | Required | Default | Description
+---|---|---|---|---
+name | string| yes |  | The name of the parameter.
+required| bool | no | true | Whether or not the parameter is required.  If `false` and no default is provided, will be omitted from the parameters passed to the ansibleapp.
+description | string | yes | | A human readable description of the parameter.
+type | string | yes | | Type of parameter. `bool`, `int`, `float`, `string`, are valid
+default | bool,int,float,string|  no | | An optional default value for the parameter.
 
-> TODO: Lack of default signifies a required answer?
 
 ## Running AnsibleApps
 
