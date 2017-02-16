@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 from pip.req import parse_requirements
 
-install_reqs = parse_requirements('requirements.txt', session=False)
+install_reqs = parse_requirements('src/requirements.txt', session=False)
 reqs = [str(ir.req) for ir in install_reqs]
 
 setup(
@@ -10,7 +10,9 @@ setup(
     description="Tooling for managing ansibleapp projects",
     author="Fusor",
     author_email="ansible-apps@redhat.com",
-    packages=find_packages(),
+    package_dir={'': 'src'},
+    packages=find_packages('src'),
+    install_requires=reqs,
     package_data={'ansibleapp': ['dat/ex.Dockerfile']},
     entry_points={
         'console_scripts': ['ansibleapp = ansibleapp.cli:main']
