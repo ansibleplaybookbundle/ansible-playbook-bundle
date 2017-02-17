@@ -105,3 +105,26 @@ You should now have a working ansibleapp. To provision/deprovision your applicat
 docker run -e "OPENSHIFT_TARGET=<oc_cluster_address>" -e "OPENSHIFT_USER=<oc_user>" -e "OPENSHIFT_PASS=<oc_pass>" <container-name> provision
 docker run -e "OPENSHIFT_TARGET=<oc_cluster_address>" -e "OPENSHIFT_USER=<oc_user>" -e "OPENSHIFT_PASS=<oc_pass>" <container-name> deprovision
 ```
+
+## Adding parameters to an ansibleapp project
+
+It is typical for containers to be designed with an entrypoint that takes parameters at run time for last-second configuration, allowing you to make generic containers rather than having to rebuild every time you want to change settings. To pass variables into an ansible-container created container, you will need to escape the variable subsitition in your `container.yml`. For example:
+
+```yaml
+services:
+  etherpad:
+    [...]
+    environment:
+      - "DATABASE_USER={{ '{{ database_user }}' }}"
+      - "DATABASE_PASSWORD={{ '{{ database_password }}' }}"
+```
+
+Will produce a deployment role and playbook that will expect the `database_user` and `database_password` variables.
+
+The ansibleapp-base entrypoint script will pass arguments through to the playbook, so in the example above, you could run an ansibleapp with the arguments:
+
+```bash
+docker run [...] ansibleapp/etherpad-ansibleapp provision --extra-vars '{"database_user": "myuser", "database_password": "mypassword"}'
+```
+
+and they will be passed to the `provision.yaml` (which should be the same as your `shipit-openshift.yml`).
