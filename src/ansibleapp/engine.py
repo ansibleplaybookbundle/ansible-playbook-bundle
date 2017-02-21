@@ -32,9 +32,10 @@ def write_dockerfile(dockerfile, destination):
 def insert_encoded_spec(dockerfile, encoded_spec_lines):
     found_idx = [i for i, line in enumerate(dockerfile) if SPEC_LABEL in line]
     if not found_idx:
-        err = "ERROR: %s missing from dockerfile while inserting spec blob" % \
-                SPEC_LABEL
-        raise Exception(err)
+        raise Exception(
+            "ERROR: %s missing from dockerfile while inserting spec blob" %
+            SPEC_LABEL
+        )
 
     split_idx = found_idx[0] + 1
 
@@ -132,9 +133,10 @@ def init_dockerfile(spec_path, dockerfile_path):
     # the way the code expects
     blob = base64.b64encode(load_spec_str(spec_path))
     dockerfile_out = insert_encoded_spec(
-            load_dockerfile(), make_friendly(blob))
+        load_dockerfile(), make_friendly(blob)
+    )
     write_dockerfile(dockerfile_out, dockerfile_path)
-    print 'Finished writing dockerfile.'
+    print('Finished writing dockerfile.')
 
 
 def cmdrun_prepare(**kwargs):
@@ -148,7 +150,7 @@ def cmdrun_prepare(**kwargs):
     try:
         spec = load_spec_dict(spec_path)
     except Exception as e:
-        print 'ERROR: Failed to load spec!'
+        print('ERROR: Failed to load spec!')
         raise e
 
     # ID specfile if it hasn't already been done

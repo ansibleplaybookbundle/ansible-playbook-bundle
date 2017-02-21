@@ -2,5 +2,5 @@
 *.egg-info/
 *.pyc
 ansibleapp-library/
-src/build/
-src/dist/
+build/
+dist/
