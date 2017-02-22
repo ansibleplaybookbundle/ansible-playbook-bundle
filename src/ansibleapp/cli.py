@@ -2,7 +2,7 @@ import os
 import sys
 import argparse
 
-import engine
+import ansibleapp.engine
 
 AVAILABLE_COMMANDS = {
     'help': 'Display this help message',
@@ -62,7 +62,8 @@ def main():
         sys.exit(0)
 
     try:
-        getattr(engine, u'cmdrun_{}'.format(args.subcommand))(**vars(args))
+        getattr(ansibleapp.engine,
+                u'cmdrun_{}'.format(args.subcommand))(**vars(args))
     except Exception as e:
         print("Exception occurred! %s" % e)
         sys.exit(1)
