@@ -1,0 +1,33 @@
+.TH ansibleapp 1
+
+.SH NAME
+ansibleapp \- A tool for assisting in building and packaging ansibleapps.
+.SH SYNOPSIS
+.B ansibleapp
+[\fBOPTIONAL ARGUMENT\fR]
+[\fBSUBCOMMAND\fR]
+
+.SH DESCRIPTION
+.B ansibleapp
+This command is used to prepare and build an ansibleapp meta-container.
+.SH OPTIONAL ARGUMENTS
+.TP
+.BR \-h ", " \-\-help 
+Display the help message and exit.
+.TP
+.BR \-\-debug
+Enable debug output.
+.TP
+.BR \-p ", " \-\-project \ \fIPATH\fR
+Specify a path to your project. Defaults to CWD.
+
+.SH SUBCOMMANDS
+.TP
+.BR help
+Display the help message.
+.TP
+.BR prepare
+Prepare an ansible-container project for ansibleapp packaging.
+.TP
+.BR build
+Build and package ansibleapp container.
