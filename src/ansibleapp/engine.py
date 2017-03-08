@@ -13,13 +13,18 @@ DAT_PATH = os.path.join(os.path.dirname(__file__), DAT_DIR)
 ACTIONS_DIR = os.path.join('ansibleapp', 'actions')
 
 EX_DOCKERFILE = 'ex.Dockerfile'
+EX_AC_DOCKERFILE = 'ex.ac.Dockerfile'
 EX_DOCKERFILE_PATH = os.path.join(DAT_PATH, EX_DOCKERFILE)
+EX_AC_DOCKERFILE_PATH = os.path.join(DAT_PATH, EX_AC_DOCKERFILE)
 
 SPEC_LABEL = 'com.redhat.ansibleapp.spec'
 
 
-def load_dockerfile():
-    with open(EX_DOCKERFILE_PATH, 'r') as dockerfile:
+def load_dockerfile(ansible_dir_exists):
+    df_path = EX_AC_DOCKERFILE_PATH if ansible_dir_exists \
+        else EX_DOCKERFILE_PATH
+
+    with open(df_path, 'r') as dockerfile:
         return dockerfile.readlines()
 
 
@@ -113,9 +118,8 @@ def touch(fname):
         open(fname, 'a').close()
 
 
-def init_actions(project_path, provider):
+def init_actions(project_path, provider, ansible_dir_exists):
     actions_path = os.path.join(project_path, ACTIONS_DIR)
-
     src_file = 'shipit-%s.yml' % provider
     provision_src_path = os.path.join(project_path, 'ansible', src_file)
     provision_dest_path = os.path.join(actions_path, 'provision.yaml')
@@ -123,18 +127,23 @@ def init_actions(project_path, provider):
     if not os.path.exists(actions_path):
         os.makedirs(actions_path)
 
-    # Only write over provision.yml if the file doesn't already exist
-    if not os.path.exists(provision_dest_path):
-        copyfile(provision_src_path, provision_dest_path)
+    if ansible_dir_exists:
+        # Only write over provision.yml if the file doesn't already exist
+        if not os.path.exists(provision_dest_path):
+            copyfile(provision_src_path, provision_dest_path)
+    else:
+        print('NOTE: No ansible dir found at project root.' +
+              'Assuming manual authoring.')
 
 
-def init_dockerfile(spec_path, dockerfile_path):
+def init_dockerfile(spec_path, dockerfile_path, ansible_dir_exists):
     # TODO: Defensively confirm the strings are encoded
     # the way the code expects
     blob = base64.b64encode(load_spec_str(spec_path))
     dockerfile_out = insert_encoded_spec(
-        load_dockerfile(), make_friendly(blob)
+        load_dockerfile(ansible_dir_exists), make_friendly(blob)
     )
+
     write_dockerfile(dockerfile_out, dockerfile_path)
     print('Finished writing dockerfile.')
 
@@ -161,8 +170,11 @@ def cmdrun_prepare(**kwargs):
         fmtstr = 'ERROR: Spec file: [ %s ] failed validation'
         raise Exception(fmtstr % spec_path)
 
-    init_actions(project, kwargs['provider'])
-    init_dockerfile(spec_path, dockerfile_path)
+    ansible_dir = os.path.join(project, 'ansible')
+    ansible_dir_exists = os.path.exists(ansible_dir)
+
+    init_actions(project, kwargs['provider'], ansible_dir_exists)
+    init_dockerfile(spec_path, dockerfile_path, ansible_dir_exists)
 
 
 def cmdrun_build(**kwargs):
