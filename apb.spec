@@ -16,7 +16,7 @@
 %endif
 %{!?python_sitelib: %define python_sitelib %(%{pythonbin} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 
-Name: ansibleapp
+Name: apb
 Version: 0.1.0
 Release: 1%{?dist}
 Summary: A lightweight application definition (meta-containers)
@@ -41,7 +41,7 @@ Requires: PyYAML
 
 
 %description
-AnsibleApp is a lightweight application definition (meta-containers). AnsibleApp
+Ansible Playbook Bundle (APB) is a lightweight application definition (meta-containers). APB
 has the following features:
 
 %prep
@@ -59,10 +59,10 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %files
-%{_bindir}/ansibleapp
-%dir %{python_sitelib}/ansibleapp
-%{python_sitelib}/ansibleapp/*
-%{python_sitelib}/ansibleapp-*.egg-info
+%{_bindir}/apb
+%dir %{python_sitelib}/apb
+%{python_sitelib}/apb/*
+%{python_sitelib}/apb-*.egg-info
 
 
 %changelog

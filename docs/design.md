@@ -1,9 +1,9 @@
-# AnsibleApp Spec File
+# Ansible Playbook Bundle (APB) Spec File
 
 Example:
 
 ```yaml
-name: fusor/etherpad-ansibleapp
+name: fusor/etherpad-apb
 description: Note taking web application
 bindable: true
 async: optional
@@ -42,25 +42,25 @@ parameters:
 Field Name | Type | Required | Default | Description
 ---|---|---|---|---
 name | string| yes |  | The name of the parameter.
-required| bool | no | true | Whether or not the parameter is required.  If `false` and no default is provided, will be omitted from the parameters passed to the ansibleapp.
+required| bool | no | true | Whether or not the parameter is required.  If `false` and no default is provided, will be omitted from the parameters passed to the APB.
 description | string | yes | | A human readable description of the parameter.
 type | string | yes | | Type of parameter. `bool`, `int`, `float`, `string`, are valid
 default | bool,int,float,string|  no | | An optional default value for the parameter.
 
 
-## Running AnsibleApps
+## Running APB
 
-AnsibleApps are containers that are run with the following command:
+APBs are containers that are run with the following command:
 
 `docker run $container_name $action $arguments`
 
 * `container_name`
 
-The name of the ansibleapp container, i.e. `ansibleapp/etherpad`
+The name of the APB container, i.e. `apb/etherpad`
 
 * `action`
 
-One of the 4 possible actions an ansible app can take. At a minimum, an ansibleapp
+One of the 4 possible actions an APB can take. At a minimum, an APB
 must implement provision and deprovision.
 
 ```
@@ -72,7 +72,7 @@ must implement provision and deprovision.
 
 * `arguments`
 
-Arguments in the form of a JSON payload that an ansibleapp may need to perform
+Arguments in the form of a JSON payload that an APB may need to perform
 a specified action. JSON is an `Arguments` object:
 
 **Arguments**

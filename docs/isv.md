@@ -1,6 +1,6 @@
-# How to create an ansibleapp using roles from ansible-galaxy
+# How to create an APB using roles from ansible-galaxy
 
-The easiest manner to produce an ansibleapp is to start with ansible-container. Ansible-container will give us all the tools we need to link preexisting roles from Galaxy and piece them together to create a substantial application ready to run on OCP or Kubernetes.
+The easiest manner to produce an APB is to start with ansible-container. Ansible-container will give us all the tools we need to link preexisting roles from Galaxy and piece them together to create a substantial application ready to run on OCP or Kubernetes.
 
 ```
 ansible-container init
@@ -9,7 +9,7 @@ ansible-container init
 This produces a directory structure as follows:
 
 ```
-AnsibleApplication/
+AnsiblePlaybookBundle/
     ansible/
         container.yml
         main.yml
@@ -99,7 +99,7 @@ ex. main.yml
     - dymurray.etherpad-centos-container
 ```
 
-We now have all that we need to build a simple ansibleapp. We now run
+We now have all that we need to build a simple APB. We now run
 
 ```
 ansible-container build
@@ -119,14 +119,14 @@ We now have enough to deploy the application to openshift simply by running:
 ansible-playbook ansible/shipit-openshift.yml
 ```
 
-# Packaging application as an AnsibleApp
+# Packaging application as an APB
 
 From here you may refer to ##LINK_TO_OTHER_DOC HERE## for directory layout structure. But the simplest steps are as follows.
 
-The first step is to create a new directory called 'ansibleapp' and a Dockerfile for the entire application so that our file structure changes as so:
+The first step is to create a new directory called 'apb' and a Dockerfile for the entire application so that our file structure changes as so:
 
 ```
-AnsibleApplication/
+AnsiblePlaybookBundle/
     Dockerfile
     ansible/
         roles/
@@ -137,7 +137,7 @@ AnsibleApplication/
         requirements.yml
         meta.yml
         shipit-openshift.yml
-    ansibleapp/
+    apb/
         actions/
             provision.yaml
             deprovision.yaml
@@ -147,23 +147,23 @@ Until we create provision.yaml and deprovision.yaml under actions, lets first ma
 ex. Dockerfile
 
 ```
-FROM ansibleapp/ansibleapp-base
+FROM apb/apb-base
 
 MAINTAINER Dylan Murray <dymurray@redhat.com>
 
 ADD ansible /usr/local/ansible
-ADD ansibleapp/actions /ansibleapp/actions
+ADD apb/actions /apb/actions
 ```
 
 We now want to make an almost identical copy to shipit-openshift.yml and use that as provision.yaml but our roles are now located at /usr/local/ansible/roles per our Dockerfile. So provision.yaml looks something like:
 
 ```
-- name: Deploy AnsibleApp to  openshift
+- name: Deploy APB to  openshift
   hosts: localhost
   gather_facts: false
   connection: local
   roles:
-  - role: /usr/local/ansible/roles/ansibleapp-openshift
+  - role: /usr/local/ansible/roles/apb-openshift
     playbook_debug: false
 ```
 
@@ -174,20 +174,20 @@ And since deprovision.yaml is really just deleting the project, it's very simple
   gather_facts: false
   connection: local
   tasks:
-  - name: Delete ansibleapp project
-    command: oc delete project ansibleapp
+  - name: Delete apb project
+    command: oc delete project apb
 ```
 
 We can now build this container by running from the parent directory:
 
 ```
-docker build -t MyNewAnsibleApp .
+docker build -t MyNewAnsiblePlaybookBundle .
 ```
 
 And can run the application with:
 
 ```
-docker run -e "OPENSHIFT_TARGET=<oc_cluster_address>" -e "OPENSHIFT_USER=<oc_user>" -e "OPENSHIFT_PASS=<oc_pass>" <ansibleapp_name> $action
+docker run -e "OPENSHIFT_TARGET=<oc_cluster_address>" -e "OPENSHIFT_USER=<oc_user>" -e "OPENSHIFT_PASS=<oc_pass>" <apb_name> $action
 ```
 
 where $action is either provision or deprovision.

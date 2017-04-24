@@ -5,16 +5,16 @@ install_reqs = parse_requirements('src/requirements.txt', session=False)
 reqs = [str(ir.req) for ir in install_reqs]
 
 setup(
-    name="ansibleapp",
+    name="apb",
     version="0.1.0",
-    description="Tooling for managing ansibleapp projects",
+    description="Tooling for managing Ansible Playbook Bundle (APB) projects",
     author="Fusor",
     author_email="ansible-apps@redhat.com",
     package_dir={'': 'src'},
     packages=find_packages('src'),
     install_requires=reqs,
-    package_data={'ansibleapp': ['dat/ex.Dockerfile', 'dat/ex.ac.Dockerfile']},
+    package_data={'apb': ['dat/ex.Dockerfile', 'dat/ex.ac.Dockerfile']},
     entry_points={
-        'console_scripts': ['ansibleapp = ansibleapp.cli:main']
+        'console_scripts': ['apb = apb.cli:main']
     }
 )
