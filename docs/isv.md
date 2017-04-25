@@ -1,4 +1,4 @@
-# How to create an APB using roles from ansible-galaxy
+# How to create an ansible playbook bundle (APB) using roles from ansible-galaxy
 
 The easiest manner to produce an APB is to start with ansible-container. Ansible-container will give us all the tools we need to link preexisting roles from Galaxy and piece them together to create a substantial application ready to run on OCP or Kubernetes.
 
@@ -119,7 +119,7 @@ We now have enough to deploy the application to openshift simply by running:
 ansible-playbook ansible/shipit-openshift.yml
 ```
 
-# Packaging application as an APB
+# Packaging application as an Ansible Playbook Bundle
 
 From here you may refer to ##LINK_TO_OTHER_DOC HERE## for directory layout structure. But the simplest steps are as follows.
 
@@ -158,7 +158,7 @@ ADD apb/actions /apb/actions
 We now want to make an almost identical copy to shipit-openshift.yml and use that as provision.yaml but our roles are now located at /usr/local/ansible/roles per our Dockerfile. So provision.yaml looks something like:
 
 ```
-- name: Deploy APB to  openshift
+- name: Deploy AnsiblePlaybookBundle to openshift
   hosts: localhost
   gather_facts: false
   connection: local
@@ -181,7 +181,7 @@ And since deprovision.yaml is really just deleting the project, it's very simple
 We can now build this container by running from the parent directory:
 
 ```
-docker build -t MyNewAnsiblePlaybookBundle .
+docker build -t MyNewApb .
 ```
 
 And can run the application with:

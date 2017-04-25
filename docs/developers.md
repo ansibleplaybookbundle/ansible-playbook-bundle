@@ -12,7 +12,7 @@ AnsiblePlaybookBundle/
             unbind.yaml
 ```
 
-These playbooks are called when their respective action is passed into the APB meta container. 
+These playbooks are called when their respective action is passed into the ansible playbook bundle meta container.
 
 ##### provision.yaml
 
@@ -42,15 +42,15 @@ ADD apb/actions /apb/actions
 
 This Dockerfile is based off apb/apb-base which has an entrypoint script which will call the respective playbook out of /apb/actions/ as well as handling authentication.
 
-Running an APB
+Running an Ansible Playbook Bundle (APB)
 ```
 docker run -e "OPENSHIFT_TARGET=<oc_cluster_address>" -e "OPENSHIFT_USER=<oc_user>" -e "OPENSHIFT_PASS=<oc_pass>" <apb_name> $action
 ex: docker run -e "OPENSHIFT_TARGET=cap.example.com:8443" -e "OPENSHIFT_USER=admin" -e "OPENSHIFT_PASS=admin" apb/etherpad-apb provision
 ```
 
-# Using ansible-container to create an APB
+# Using ansible-container to create an ansible playbook bundle
 
-[ansible-container](github.com/ansible/ansible-container) is a project that allows you to define a containerized application in yaml, and configure the individual containers using ansible. This section will assume that you have created an ansible-container project as described in the [ansible-container documentation](http://docs.ansible.com/ansible-container/). 
+[ansible-container](https://github.com/ansible/ansible-container) is a project that allows you to define a containerized application in yaml, and configure the individual containers using ansible. This section will assume that you have created an ansible-container project as described in the [ansible-container documentation](http://docs.ansible.com/ansible-container/). 
 
 Once you have a working ansible-container project, creating an APB is trivial.
 
@@ -77,7 +77,7 @@ Once you have a working ansible-container project, creating an APB is trivial.
     ADD ansible /usr/local/ansible
     ADD apb/actions /apb/actions
     ```
-    
+
 1. Your directory structure now should look something like this:
 
     ```
@@ -106,9 +106,9 @@ docker run -e "OPENSHIFT_TARGET=<oc_cluster_address>" -e "OPENSHIFT_USER=<oc_use
 docker run -e "OPENSHIFT_TARGET=<oc_cluster_address>" -e "OPENSHIFT_USER=<oc_user>" -e "OPENSHIFT_PASS=<oc_pass>" <container-name> deprovision
 ```
 
-## Adding parameters to an APB project
+## Adding parameters to an ansible playbook bundle project
 
-It is typical for containers to be designed with an entrypoint that takes parameters at run time for last-second configuration, allowing you to make generic containers rather than having to rebuild every time you want to change settings. To pass variables into an ansible-container created container, you will need to escape the variable subsitition in your `container.yml`. For example:
+It is typical for containers to be designed with an entrypoint that takes parameters at run time for last-second configuration, allowing you to make generic containers rather than having to rebuild every time you want to change settings. To pass variables into an ansible-container created container, you will need to escape the variable substitution in your `container.yml`. For example:
 
 ```yaml
 services:

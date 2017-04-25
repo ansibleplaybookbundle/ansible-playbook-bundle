@@ -10,8 +10,8 @@ has the following features:
 * Easily modified or extended.
 
 ## Documentation
-* [Design](docs/design.md) - overall design of APB
-* [Developers](docs/developers.md) - how to create your own APB
+* [Design](docs/design.md) - overall design of Ansible Playbook Bundles
+* [Developers](docs/developers.md) - how to create your own Ansible Playbook Bundle
 * [ISV](docs/isv.md) - integrating with existing Ansible roles
 
 ## Links

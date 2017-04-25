@@ -48,7 +48,7 @@ type | string | yes | | Type of parameter. `bool`, `int`, `float`, `string`, are
 default | bool,int,float,string|  no | | An optional default value for the parameter.
 
 
-## Running APB
+## Running Ansible Playbook Bundles
 
 APBs are containers that are run with the following command:
 
