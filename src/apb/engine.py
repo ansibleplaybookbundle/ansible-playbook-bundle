@@ -96,7 +96,7 @@ def make_friendly(blob):
             fmtstr = '"{0}"\n'
         elif i == 0:
             fmtstr = '"{0}\\\n'
-        elif i == line_break - 1:
+        elif i == chunks - 1 and mod == 0:
             fmtstr = '{0}"\n'
 
         offset = i * line_break
