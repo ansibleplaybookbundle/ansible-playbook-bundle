@@ -33,14 +33,14 @@ TODO
 
 ### Example Dockerfile
 ```
-FROM apb/apb-base
+FROM ansibleplaybookbundle/apb-base
 
 MAINTAINER Dylan Murray <dymurray@redhat.com>
 
 ADD apb/actions /apb/actions
 ```
 
-This Dockerfile is based off apb/apb-base which has an entrypoint script which will call the respective playbook out of /apb/actions/ as well as handling authentication.
+This Dockerfile is based off ansibleplaybookbundle/apb-base which has an entrypoint script which will call the respective playbook out of /apb/actions/ as well as handling authentication.
 
 Running an Ansible Playbook Bundle (APB)
 ```
@@ -72,7 +72,7 @@ Once you have a working ansible-container project, creating an APB is trivial.
 1. Create a Dockerfile with the content:
 
     ```
-    FROM apb/apb-base
+    FROM ansibleplaybookbundle/apb-base
 
     ADD ansible /usr/local/ansible
     ADD apb/actions /apb/actions

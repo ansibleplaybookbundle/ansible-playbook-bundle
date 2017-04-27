@@ -147,7 +147,7 @@ Until we create provision.yaml and deprovision.yaml under actions, lets first ma
 ex. Dockerfile
 
 ```
-FROM apb/apb-base
+FROM ansibleplaybookbundle/apb-base
 
 MAINTAINER Dylan Murray <dymurray@redhat.com>
 
