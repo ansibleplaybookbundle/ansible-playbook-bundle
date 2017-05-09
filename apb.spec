@@ -1,4 +1,4 @@
-%if 0%{?fedora}
+%if 0%{?fedora} || 0%{?rhel}
 %global use_python3 0
 %global use_python2 1
 %global pythonbin %{__python2}
