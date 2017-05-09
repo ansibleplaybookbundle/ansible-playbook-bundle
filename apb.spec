@@ -17,9 +17,11 @@
 %endif
 %{!?python_sitelib: %define python_sitelib %(%{pythonbin} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 
+%define build_timestamp %(date +"%Y%m%d%H%M%%S")
+
 Name: apb
 Version: 0.1.0
-Release: 1%{?dist}
+Release: 1.%{build_timestamp}%{?dist}
 Summary: Ansible Playbook Bundle (APB) is a lightweight application definition (meta-container).
 
 Group: Development/Tools
