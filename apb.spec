@@ -28,7 +28,7 @@ URL: https://github.com/fusor/ansible-service-broker
 Source0: %{name}-%{version}.tar.gz
 
 BuildArch: noarch
-%if %{use_python3}
+%if 0%{?use_python3}
 BuildRequires: python3-devel
 BuildRequires: python3-setuptools
 BuildRequires: python3-pip
