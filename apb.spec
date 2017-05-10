@@ -34,12 +34,14 @@ BuildArch: noarch
 BuildRequires: python3-devel
 BuildRequires: python3-setuptools
 BuildRequires: python3-pip
-Requires: python3-PyYAML
+Requires: python3-PyYAML >= 3.10
+Requires: python3-PyYAML < 4
 %else
 BuildRequires: python-devel
 BuildRequires: python-setuptools
 BuildRequires: python-pip
-Requires: PyYAML
+Requires: PyYAML >= 3.10
+Requires: PyYAML < 4
 %endif
 
 
