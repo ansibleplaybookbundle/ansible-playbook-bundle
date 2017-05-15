@@ -30,6 +30,14 @@ parameters:
     type: int
     default: 3306
 ```
+Or with an empty parameters field
+```yaml
+name: example/no-parameters 
+description: Example showing no parameters
+bindable: false
+async: optional
+parameters: []
+```
 
 > TODO: Explain specfile base64 encoding and label stamp
 
