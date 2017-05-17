@@ -16,4 +16,4 @@ has the following features:
 
 ## Links
 * Ansible Service Broker [https://github.com/fusor/ansible-service-broker ](https://github.com/fusor/ansible-service-broker)
-* YouTube channel: [APB](https://www.youtube.com/channel/UCE0uKh7SmjsOL3Zv0jnhgaA)
+* YouTube channel: [Ansible Service Broker](https://www.youtube.com/channel/UC04eOMIMiV06_RSZPb4OOBw)
