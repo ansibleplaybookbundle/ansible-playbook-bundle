@@ -4,6 +4,8 @@ import argparse
 
 import apb.engine
 
+SKIP_OPTIONS = ['provision', 'deprovision', 'bind', 'unbind', 'roles']
+
 AVAILABLE_COMMANDS = {
     'help': 'Display this help message',
     'init': 'Initialize the directory for APB development',
@@ -38,18 +40,26 @@ def subcmd_init_parser(parser, subcmd):
 
     subcmd.add_argument(
         '--async', action='store', dest='async',
-        help=u'Specify asynchronous operation on application.', default='optional'
+        help=u'Specify asynchronous operation on application.', default='optional',
+        choices=['required', 'optional', 'unsupported']
     )
 
     subcmd.add_argument(
-        '--bindable', action='store_true', dest='bindable',
-        help=u'Make application bindable', default=False
+        '--not-bindable', action='store_false', dest='bindable',
+        help=u'Make application not bindable on the spec.', default=True
     )
 
     subcmd.add_argument(
         '--param', '-p', action='append', dest='params',
         help=u'Parameter declaration separated by commas'
     )
+
+    for opt in SKIP_OPTIONS:
+        subcmd.add_argument(
+            '--skip-%s' % opt, action='store_true', dest='skip-%s' % opt,
+            help=u'Specify which playbooks to not generate by default.', default=False
+        )
+
     return
 
 
