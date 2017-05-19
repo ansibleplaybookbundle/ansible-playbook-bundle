@@ -78,7 +78,7 @@ def subcmd_help_parser(parser, subcmd):
 
 def main():
     parser = argparse.ArgumentParser(
-        description=u'APB tooling for'
+        description=u'APB tooling for '
         u'assisting in building and packaging APBs.'
     )
 
