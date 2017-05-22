@@ -11,7 +11,7 @@ care of the details so they should be easy to deploy.
 ### Init
 
 `apb init` is a helper that will generate a skeleton APB directory with
-an `apb.yaml`, a `Dockerfile`, a `roles` directory, and a `playbooks` directory. 
+an `apb.yml`, a `Dockerfile`, a `roles` directory, and a `playbooks` directory. 
 `apb init` requires a name to be passed as an argument which will be used as the 
 APB name.
 
@@ -21,7 +21,7 @@ APB name.
 `--async ASYNC_OPTION` specifies the asynchronous operation of the APB. Defaults to `optional`
          valid options are: ['required', 'optional', 'unsupported']
 `--not-bindable` specifies if the APB will not be bindable by default. Defaults to `False`.
-`--param PARAM_STRING`, `-p PARAM_STRING` Specifies which parameters to include by default in `apb.yaml`.
+`--param PARAM_STRING`, `-p PARAM_STRING` Specifies which parameters to include by default in `apb.yml`.
     `PARAM_STRING` contains four options to specify for a parameter separated by a comma. `name`, `type`, `description`, `default`.
     Ex. `apb init my_apb -p name=sample_name,default=foo,type=string,description="sample description"`
 `--force` forces reinitialization of project directory if it already exists
@@ -35,7 +35,7 @@ APB name.
 ### Prepare
 
 `apb prepare` is a helper that will update the `Dockerfile` with
-your `apb.yaml` file encoded as a base64 label. This allows the spec
+your `apb.yml` file encoded as a base64 label. This allows the spec
 to be accessible to clients via registry APIs without the necessity of downloading
 full images. For example, the [Ansible Service Broker](https://www.github.com/fusor/ansible-service-broker)
 will use this data to build an inventory of available APBs in a given
@@ -46,7 +46,7 @@ registry and expose them to an Openshift or Kubernetes cluster.
 By default, the CWD is used, but it will accept a directory location via
 `--project=$LOCATION` as well.
 
-Prepare also expects a specfile, `apb.yaml`, to exist at the project root.
+Prepare also expects a specfile, `apb.yml`, to exist at the project root.
 [More on specfiles and expected contents.](https://github.com/fusor/ansible-playbook-bundle/blob/master/docs/design.md).
 
 Following `apb prepare`, you should have a Dockerfile and a correctly
