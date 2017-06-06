@@ -34,9 +34,15 @@ Clone this repo
 ```
 git clone https://github.com/fusor/ansible-playbook-bundle.git
 ```
+Install python-virtualenv, create a virtualenv, and activate it.
+```
+sudo dnf install -y python-virtualenv
+virtualenv apb
+source apb/bin/activate
+```
 Install requirements and run the setup script (requires python)
 ```
-sudo pip install -r src/requirements.txt && sudo python setup.py install
+pip install -r src/requirements.txt && python setup.py install
 ```
 Alternatively you can use [tito](http://github.com/dgoodwin/tito) to install.
 ```bash
