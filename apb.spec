@@ -20,7 +20,7 @@
 %define build_timestamp %(date +"%Y%m%d%H%M%%S")
 
 Name: apb
-Version: 0.1.0
+Version: 0.1.1
 Release: 1.%{build_timestamp}%{?dist}
 Summary: Ansible Playbook Bundle (APB) is a lightweight application definition (meta-container).
 
