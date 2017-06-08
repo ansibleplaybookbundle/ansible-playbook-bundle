@@ -24,14 +24,14 @@
 %endif
 
 Name: apb
-Version: 0.1.1
+Version: 0.1.2
 Release: 1%{build_timestamp}%{?dist}
 Summary: Ansible Playbook Bundle (APB) is a lightweight application definition (meta-container).
 
 Group: Development/Tools
 License: GPLv2
 URL: https://github.com/openshift/ansible-service-broker
-Source0: %{name}-%{version}.tar.gz
+Source0: https://github.com/fusor/ansible-playbook-bundle/archive/%{name}-%{version}.tar.gz
 
 BuildArch: noarch
 %if 0%{?use_python3}
