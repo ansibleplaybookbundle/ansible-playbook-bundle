@@ -4,6 +4,7 @@ import uuid
 import base64
 import yaml
 import string
+import requests
 
 import shutil
 import docker
@@ -349,16 +350,63 @@ def cmdrun_prepare(**kwargs):
 
 
 def cmdrun_build(**kwargs):
-    print("Building APB using tag: [%s]" % kwargs['tag'])
     project = kwargs['base_path']
     spec_path = os.path.join(project, SPEC_FILE)
     dockerfile_path = os.path.join(os.path.join(project, DOCKERFILE))
+
+    if not os.path.exists(spec_path):
+        raise Exception('ERROR: Spec file: [ %s ] not found' % spec_path)
+
+    try:
+        spec = load_spec_dict(spec_path)
+    except Exception as e:
+        print('ERROR: Failed to load spec!')
+        raise e
+
+    if not kwargs['tag']:
+        tag = spec['image']
+    else:
+        tag = kwargs['tag']
+    print("Building APB using tag: [%s]" % tag)
 
     # Restamp Dockerfile with base64 encoded spec before building
     update_dockerfile(spec_path, dockerfile_path)
     client = docker.DockerClient(base_url='unix://var/run/docker.sock', version='auto')
 
-    client.images.build(path=project, tag=kwargs['tag'])
+    client.images.build(path=project, tag=tag)
 
-    print("Successfully built APB image: %s" % kwargs['tag'])
+    print("Successfully built APB image: %s" % tag)
 
+
+def cmdrun_push(**kwargs):
+    print("Pushing APB spec to: [%s]" % kwargs['broker_route'])
+    project = kwargs['base_path']
+    spec_path = os.path.join(project, SPEC_FILE)
+
+    if not os.path.exists(spec_path):
+        raise Exception('ERROR: Spec file: [ %s ] not found' % spec_path)
+
+    try:
+        spec = load_spec_str(spec_path)
+    except Exception as e:
+        print('ERROR: Failed to load spec!')
+        raise e
+
+    blob = base64.b64encode(spec)
+    dataSpec = {'apbSpec': blob}
+    try:
+        r = requests.post(kwargs['broker_route']+'/apb/spec', data=dataSpec)
+    except Exception as e:
+        # Try again with http in front of the route
+        try:
+            r = requests.post('http://'+kwargs['broker_route']+'/apb/spec', data=dataSpec)
+        except Exception as e2:
+            print('ERROR: Failed to POST spec to %s' % kwargs['broker_route'])
+            raise e2
+
+    if r.status_code != 200:
+        print("Error: Attempt to add APB to the Broker returned status: %d" % r.status_code)
+        print("Unable to add APB to Ansible Service Broker.")
+        exit(1)
+
+    print("Successfully added APB to Ansible Service Broker")

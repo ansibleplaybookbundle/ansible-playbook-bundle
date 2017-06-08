@@ -56,5 +56,16 @@ ID'd specfile. Build and publish this container to your preferred registry.
 
 `apb build` is a helper which will build your APB in the current directory.
 `build` simply expects a Dockerfile in the proper format to be in the current
-working directory. `build` takes one argument which is the tag which will be used
-to tag the built APB Docker image.
+working directory. `build` takes one optional argument which is the tag which 
+will be used to tag the built APB Docker image.
+
+#### Options
+```
+`--tag TAG` specifies a tag to use for building the APB image
+```
+
+### Push
+
+`apb push` is a helper which will push your APB spec in the current directory to
+an Ansible Service Broker. `push` takes one argument which is the route or IP+Port
+combination of the Ansible Service Broker.
