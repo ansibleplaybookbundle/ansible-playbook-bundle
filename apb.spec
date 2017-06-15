@@ -37,13 +37,11 @@ BuildArch: noarch
 %if 0%{?use_python3}
 BuildRequires: python3-devel
 BuildRequires: python3-setuptools
-BuildRequires: python3-pip
 Requires: python3-PyYAML >= 3.10
 Requires: python3-PyYAML < 4
 %else
 BuildRequires: python-devel
 BuildRequires: python-setuptools
-BuildRequires: python-pip
 Requires: PyYAML >= 3.10
 Requires: PyYAML < 4
 %endif
@@ -59,6 +57,7 @@ has the following features:
 
 %prep
 %setup -q -n %{name}-%{version}
+sed -i '/req/d' setup.py
 
 %build
 %{pythonbin} setup.py build
