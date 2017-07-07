@@ -25,54 +25,112 @@ my-apb/
 └── roles/
 ```
 ### Spec File
-The `apb init` will auto generate a spec file.  You must edit this spec file to fit your application. The following is the spec file for `etherpad-apb`.  More examples can be found in the [apb-examples repo](https://github.com/fusor/apb-examples)
+The `apb init` will auto generate a spec file.  You must edit this spec file to fit your application. The following is the spec file for [etherpad-apb](https://github.com/fusor/apb-examples/blob/master/etherpad-apb/apb.yml).  More examples can be found in the [apb-examples repo](https://github.com/fusor/apb-examples)
 
 ```yml
-name: apb/etherpad-apb
+id: 6f180cb4-30d4-4a8a-975e-e91ca7ed2ed9   # 'id' is added automatically via `apb prepare`
+name: etherpad-apb
+image: ansibleplaybookbundle/etherpad-apb
 description: Note taking web application
 bindable: true
 async: optional
+metadata:
+  displayName: "Etherpad (APB)"
+  longDescription: "An apb that deploys Etherpad Lite"
+  imageUrl: "https://translatewiki.net/images/thumb/6/6f/Etherpad_lite.svg/200px-Etherpad_lite.svg.png"
+  documentationUrl: "https://github.com/ether/etherpad-lite/wiki"
 parameters:
-  - name: hostport
-    description: The host TCP port as the external endpoint
-    type: int
-    default: 9001
-  - name: db_user
-    description: Database User
-    type: string
-  - name: db_pass
-    description: Database Password
-    type: string
-  - name: db_name
-    description: Database Name
-    type: string
-  - name: db_host
-    description: Database service hostname/ip
-    default: mariadb
-    type: string
-  - name: db_port
-    description: Database service port
-    type: int
-    default: 3306
+  - mariadb_name:
+      title: MariaDB Database Name
+      type: string
+      default: etherpad
+  - mariadb_user:
+      title: MariaDB User
+      type: string
+      default: etherpad
+      maxlength: 63
+  - mariadb_password:
+      title: MariaDB Password
+      description: A random alphanumeric string if left blank
+      type: string
+      default: admin
+  - mariadb_root_password:
+      title: Root Password
+      description: root password for mariadb 
+      type: string
+      default: admin
+required:
+  - mariadb_name
+  - mariadb_user
 ```
 
-##### Spec File Parameters
-`parameters` section of the specfile; `ParameterObject` array
+#### Parameters
 
-Field Name | Type | Required | Default | Description
----|---|---|---|---
-name | string| yes |  | The name of the parameter.
-required| bool | no | true | Whether or not the parameter is required.  If `false` and no default is provided, will be omitted from the parameters passed to the APB.
-description | string | yes | | A human readable description of the parameter.
-type | string | yes | | Type of parameter. `bool`, `int`, `float`, `string`, are valid
-default | bool,int,float,string|  no | | An optional default value for the parameter.
+APB's with no parameters would define the `parameters` field as follows:
+```yml
+parameters: []
+```
+
+New `parameters` can be added to the spec file as shown below:
+```yaml
+parameters:
+  - mariadb_name:                   # name of the parameter
+    title: MariaDB Database Name    # title/description (shown in the UI)
+    type: string                    # type of the parameter (e.g. string, int, enum)
+    default: etherpad               # default value 
+```
+
+If a parameter is required, list the parameter name in the `required` section as shown below:
+```yaml
+required:
+ - mariadb_name
+```
+
+### Adding optional variables to an Ansible playbook bundle via environment variables
+
+To pass variables into an APB, you will need to escape the variable substitution in your `.yml` files. For example, the below is a section of the [main.yml](https://github.com/fusor/apb-examples/blob/master/etherpad-apb/roles/provision-etherpad-apb/tasks/main.yml#L89) in the [etherpad-apb](https://github.com/fusor/apb-examples/tree/master/etherpad-apb):
+
+```yml
+- name: create mariadb deployment config
+  openshift_v1_deployment_config:
+    name: mariadb
+    namespace: '{{ namespace }}'
+    ...
+    - env:
+      - name: MYSQL_ROOT_PASSWORD
+        value: '{{ mariadb_root_password }}'
+      - name: MYSQL_DATABASE
+        value: '{{ mariadb_name }}'
+      - name: MYSQL_USER
+        value: '{{ mariadb_user }}'
+      - name: MYSQL_PASSWORD
+        value: '{{ mariadb_password }}'
+```
+
+The above expects the `namespace` variable to be defined, which was not part of the `parameters` in the spec file `apb.yml`.
+
+To define variables, use the `main.yml` file under the `defaults` folder to define/set other variables for your APB.  For example, below is the [defaults/main.yml](https://github.com/fusor/apb-examples/blob/master/etherpad-apb/roles/provision-etherpad-apb/defaults/main.yml) for the `etherpad-apb`:
+
+```yml
+---
+playbook_debug: no
+namespace: "{{ lookup('env','NAMESPACE') | default('etherpad-apb', true) }}"
+mariadb_root_password: "{{ lookup('env','MYSQL_ROOT_PASSWORD') | default('admin', true) }}"
+mariadb_name: "{{ lookup('env','MYSQL_DATABASE') | default('etherpad', true) }}"
+mariadb_user: "{{ lookup('env','MYSQL_USER') | default('etherpad', true) }}"
+mariadb_password: "{{ lookup('env','MYSQL_PASSWORD') | default('admin', true) }}"
+etherpad_admin_password: "{{ lookup('env','ETHERPAD_ADMIN_PASSWORD') | default('admin', true) }}"
+etherpad_admin_user: "{{ lookup('env','ETHERPAD_ADMIN_USER') | default('etherpad', true) }}"
+etherpad_db_host: "{{ lookup('env','ETHERPAD_DB_HOST') | default('mariadb', true) }}"
+state: present
+```
 
 ### Actions
 Next we'll need to create `actions` for our APB.  At a minimum, we'll need to create the `provision.yml` and `deprovision.yml` under the `playbooks` folder.
 
 The `provision.yml` may look something like this:
 ```yml
-- name: my-apb application
+- name: Provision My APB
   hosts: localhost
   gather_facts: false
   connection: local
@@ -85,12 +143,17 @@ The `provision.yml` may look something like this:
 
 And a simple `deprovision.yml` may look like this.
 ```yml
-- hosts: localhost
+- name: Deprovision My APB
+  hosts: localhost
   gather_facts: false
   connection: local
-  tasks:
-  - name: Delete my-apb project
-    command: oc delete project my-apb
+  vars:
+    state: absent
+  roles:
+  - role: ansible.kubernetes-modules
+    install_python_requirements: no
+  - role: my-apb-openshift
+    playbook_debug: false
 ```
 
 ### Updated Directory Structure 
@@ -101,8 +164,8 @@ my-apb/
 ├── apb.yml
 ├── Dockerfile
 ├── playbooks
-│   └── provision.yml
 │   └── deprovision.yml
+│   └── provision.yml
 └── roles
     └── my-apb-openshift
         ├── defaults
@@ -116,11 +179,17 @@ my-apb/
             └── <template files>
 ```
 
+### APB Prepare
+If the `apb.yml` was edited at all, `apb prepare` must be ran to update the encoding of the spec file in the `Dockerfile`.
+
+```bash
+$ apb prepare
+```
+
 ### Build
 We can now build the APB by running from the parent directory:
 
 ```bash
-$ cd my-apb
 $ docker build -t <docker-org>/my-apb .
 ```
 
@@ -135,29 +204,3 @@ $ docker run \
     <docker-org>/my-apb <action>
 ```
 where `<action>` is either `provision` or `deprovision`.
-
-
-#### Adding parameters to an Ansible playbook bundle project
-
-It is typical for containers to be designed with an entrypoint that takes parameters at run time for last-second configuration, allowing you to make generic containers rather than having to rebuild every time you want to change settings. To pass variables into an APB, you will need to escape the variable substitution in your `.yml` files. For example:
-
-```yml
-services:
-  etherpad:
-    [...]
-    environment:
-      - "DATABASE_USER={{ '{{ database_user }}' }}"
-      - "DATABASE_PASSWORD={{ '{{ database_password }}' }}"
-```
-
-The above expects the `database_user` and `database_password` variables to be defined.
-
-The apb-base entrypoint script will pass arguments through to the playbook, so in the example above, you could run an APB with the arguments:
-
-```bash
-$ docker run \
-    [...] \
-    <docker-org>/my-apb <action> \
-    --extra-vars '{"database_user": "myuser", "database_password": "mypassword", "namespace":"my-apb"}'
-```
-and they will be passed to the `provision.yml`.
