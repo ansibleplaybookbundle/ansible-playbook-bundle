@@ -4,6 +4,7 @@ import uuid
 import base64
 import shutil
 import string
+import subprocess
 import yaml
 import requests
 
@@ -105,9 +106,9 @@ def load_example_specfile(apb_dict, params):
     env = Environment(loader=FileSystemLoader(DAT_PATH))
     template = env.get_template(EX_SPEC_FILE)
 
-    if params:
+    if params and not type(params) is list:
         params = convert_params_to_dict(params)
-    else:
+    elif not params:
         params = []
 
     return template.render(apb_dict=apb_dict, params=params)
@@ -291,13 +292,28 @@ def touch(fname, force):
         open(fname, 'a').close()
 
 
-def update_spec(project):
+def update_spec(project, ignore_deps):
     spec = get_spec(project)
     spec_path = os.path.join(project, SPEC_FILE)
+    roles_path = os.path.join(project, ROLES_DIR)
 
     # ID specfile if it hasn't already been done
     if 'id' not in spec:
         gen_spec_id(spec, spec_path)
+
+    if not ignore_deps:
+        expected_deps = load_source_dependencies(roles_path)
+        if 'required' not in spec:
+            spec['required'] = []
+        if 'metadata' not in spec:
+            spec['metadata'] = {}
+        if 'dependencies' not in spec['metadata']:
+            spec['metadata']['dependencies'] = []
+
+        current_deps = spec['metadata']['dependencies']
+        for dep in expected_deps:
+            if dep not in current_deps:
+                spec['metadata']['dependencies'].append(dep)
 
     if not is_valid_spec(spec):
         fmtstr = 'ERROR: Spec file: [ %s ] failed validation'
@@ -319,6 +335,14 @@ def update_dockerfile(project):
 
     write_file(dockerfile_out, dockerfile_path, False)
     print('Finished writing dockerfile.')
+
+
+def load_source_dependencies(roles_path):
+    print('Trying to guess list of dependencies for APB')
+    output = subprocess.check_output("/bin/grep -R \ image: "+roles_path+"|awk '{print $3}'", stderr=subprocess.STDOUT, shell=True)
+    if "{{" in output or "}}" in output:
+        print("Detected variables being used for dependent image names. Please double check the dependencies in your spec file.")
+    return output.split('\n')[:-1]
 
 
 def get_asb_route():
@@ -383,6 +407,7 @@ def cmdrun_init(**kwargs):
     bindable = kwargs['bindable']
     async = kwargs['async']
     params = kwargs['params']
+    dependencies = kwargs['dependencies']
     skip = {
         'provision': kwargs['skip-provision'],
         'deprovision': kwargs['skip-deprovision'],
@@ -410,7 +435,8 @@ def cmdrun_init(**kwargs):
         'organization': organization,
         'description': description,
         'bindable': bindable,
-        'async': async
+        'async': async,
+        'dependencies': dependencies
     }
 
     project = os.path.join(current_path, apb_name)
@@ -440,13 +466,33 @@ def cmdrun_init(**kwargs):
 
 def cmdrun_prepare(**kwargs):
     project = kwargs['base_path']
-    update_spec(project)
+    ignore_deps = kwargs['ignore_deps']
+    spec_path = os.path.join(project, SPEC_FILE)
+    spec = update_spec(project, ignore_deps)
+    spec_fields = ['id', 'name', 'image', 'description',
+                   'bindable', 'async', 'metadata', 'parameters',
+                   'required']
+
+    apb_dict = {
+        'apb-id': spec['id'],
+        'apb-name': spec['name'],
+        'organization': spec['image'].split('/')[0],
+        'description': spec['description'],
+        'bindable': spec['bindable'],
+        'async': spec['async'],
+        'metadata': spec['metadata'],
+        'required': spec['required'],
+    }
+
+    specfile_out = load_example_specfile(apb_dict, spec['parameters'])
+    write_file(specfile_out, spec_path, True)
     update_dockerfile(project)
 
 
 def cmdrun_build(**kwargs):
     project = kwargs['base_path']
-    spec = update_spec(project)
+    ignore_deps = kwargs['ignore_deps']
+    spec = update_spec(project, ignore_deps)
     update_dockerfile(project)
 
     if not kwargs['tag']:
