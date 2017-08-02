@@ -24,7 +24,7 @@
 %endif
 
 Name: apb
-Version: 0.1.2
+Version: 0.2.1
 Release: 1%{build_timestamp}%{?dist}
 Summary: Ansible Playbook Bundle (APB) is a lightweight application definition (meta-container).
 
