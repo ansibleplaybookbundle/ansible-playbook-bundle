@@ -6,12 +6,12 @@ reqs = [str(ir.req) for ir in install_reqs]
 
 setup(
     name="apb",
-    version="0.2.0",
+    version="0.2.1",
     description="Tooling for managing Ansible Playbook Bundle (APB) projects",
     author="Fusor",
     author_email="ansible-service-broker@redhat.com",
     url='https://github.com/fusor/ansible-playbook-bundle',
-    download_url='https://github.com/fusor/ansible-playbook-bundle/archive/apb-0.2.0.tar.gz',
+    download_url='https://github.com/fusor/ansible-playbook-bundle/archive/apb-0.2.1.tar.gz',
     keywords=['ansible', 'playbook', 'bundle'],
     package_dir={'': 'src'},
     packages=find_packages('src'),
