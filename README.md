@@ -98,7 +98,7 @@ subcommand:
 
 ## Initialize skeleton APB application example
 ```
-apb init my_apb -p name=my_apb_param,type=string,default=foo_param,description="sample description" --async=optional --bindable --org my_organization
+apb init my_apb --async=optional --bindable --org my_organization
 ```
 
 This gives us the following example apb.yaml 
@@ -114,9 +114,4 @@ plans:
     description: "my-plan description"
     free: true
     metadata: {}
-    parameters:
-      - name: my-param
-        required: true
-        default: "foo"
-        type: string
-        title: My Param
+    parameters: []
