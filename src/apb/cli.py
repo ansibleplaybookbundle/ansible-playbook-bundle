@@ -133,7 +133,7 @@ def subcmd_prepare_parser(subcmd):
         '--provider',
         action='store',
         dest='provider',
-        help=u'Targetted cluster type',
+        help=u'Targeted cluster type',
         choices=['openshift', 'kubernetes'],
         default='openshift'
     )

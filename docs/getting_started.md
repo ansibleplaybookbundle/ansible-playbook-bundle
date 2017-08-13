@@ -20,7 +20,7 @@ In this tutorial, we'll walk through the creation of some sample APBs.  We will 
 
 Before getting started with APBs, we need to get your system set up to create them.
 
-First, make sure your system is properly running [OpenShift Origin](https://www.openshift.org/).  You should be able to succesfully execute `oc cluster up`.  Instructions can be found on the Openshift Origin [getting started doc](https://github.com/openshift/origin/blob/master/docs/cluster_up_down.md).
+First, make sure your system is properly running [OpenShift Origin](https://www.openshift.org/).  You should be able to successfully execute `oc cluster up`.  Instructions can be found on the OpenShift Origin [getting started doc](https://github.com/openshift/origin/blob/master/docs/cluster_up_down.md).
 
 Next, install the APB tools as documented in the [README](https://github.com/fusor/ansible-playbook-bundle/blob/master/README.md#install).  To check, you can run `apb help` and check for a valid response.
 ```
@@ -248,7 +248,7 @@ $ oc logs -f <apb-pod-name>
 ...
 + ansible-playbook /opt/apb/actions/provision.yml --extra-vars '{"_apb_plan_id":"default","namespace":"getting-started"}'
 PLAY [my-test-apb playbook to provision the application] ***********************
-TASK [ansible.kubernetes-modules : Intall latest openshift client] *************
+TASK [ansible.kubernetes-modules : Install latest openshift client] *************
 skipping: [localhost]
 TASK [ansibleplaybookbundle.asb-modules : debug] *******************************
 skipping: [localhost]
@@ -377,7 +377,7 @@ At this point, our my-test application is fully functional, load balanced, scala
 #### Deprovision
 In the deprovision task, we need to destroy all provisioned resources, usually in reverse order.
 
-To add the deprovision action, we need a `deprovision.yml` inside the `playbooks` directory and tasks in `roles/deprovision-my-test-apb/tasks/main.yml`.  Both these files have been crdeated for you, but like
+To add the deprovision action, we need a `deprovision.yml` inside the `playbooks` directory and tasks in `roles/deprovision-my-test-apb/tasks/main.yml`.  Both these files have been created for you, but like
 ```
 my-test-apb/
 ├── apb.yml
@@ -428,10 +428,10 @@ To run the deprovision template, click on the menu on the list of **_Deployed Se
 
 
 #### Bind
-From the previous sections, we learned how to deploy a standalone application.  However, in most cases applications will need to communicate other applications, often a data source.  In the following sections we'll create Postgres database that the hello-world application deployed from my-test-apb can use.
+From the previous sections, we learned how to deploy a standalone application.  However, in most cases applications will need to communicate other applications, often a data source.  In the following sections we'll create PostgreSQL database that the hello-world application deployed from my-test-apb can use.
 
 ##### Bind - Prep
-To give us a good starting point, we'll create the necessary files for provision and deprovisioning Postgres. A more in depth example can be found at the [APB example for Postgres](https://github.com/fusor/apb-examples/tree/master/rhscl-postgresql-apb).
+To give us a good starting point, we'll create the necessary files for provision and deprovisioning PostgreSQL. A more in depth example can be found at the [APB example for Postgres](https://github.com/fusor/apb-examples/tree/master/rhscl-postgresql-apb).
 
 ```
 apb init <my-org>/my-pg-apb
@@ -462,7 +462,7 @@ my-pg-apb/
 
 In addition to the normal files, new playbooks `bind.yml`, `unbind.yml`, and their associated roles have been stubbed out.  `bind.yml` and `unbind.yml` are both empty and since we're using the default binding behavior, will remain empty.
 
- Edit the `apb.yml`.  Notice the setting `bindable: true`.  Replace `<my-org>` with your organization as usual.  In addition to those changes, we need to add some parameters to the apb.yml for configuring Postgres.  They will be available fields in the GUI when provisioning our new APB.
+ Edit the `apb.yml`.  Notice the setting `bindable: true`.  Replace `<my-org>` with your organization as usual.  In addition to those changes, we need to add some parameters to the apb.yml for configuring PostgreSQL.  They will be available fields in the GUI when provisioning our new APB.
 ```yaml
 name: my-pg-apb
 image: <my-org>/my-pg-apb

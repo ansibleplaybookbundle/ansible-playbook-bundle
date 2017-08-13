@@ -56,7 +56,7 @@ Alternatively you can use [tito](http://github.com/dgoodwin/tito) to install.
 tito build --test --rpm -i
 ```
 
-##### Test apb tooling
+##### Test APB tooling
 Run `apb help` to make sure the tool is installed correctly
 ```
 $ apb help
