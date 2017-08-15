@@ -9,7 +9,10 @@ import ruamel.yaml
 import json
 import requests
 import urllib3
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+# Disable insecure request warnings from both packages
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 import docker
 
