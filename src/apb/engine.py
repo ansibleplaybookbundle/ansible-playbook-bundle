@@ -195,8 +195,43 @@ def gen_spec_id(spec, spec_path):
 
 
 def is_valid_spec(spec):
-    # TODO: Implement
-    # NOTE: spec is a loaded spec
+    error = False
+    spec_keys = ['name', 'description', 'bindable', 'async', 'metadata', 'plans']
+    for key in spec_keys:
+        if key not in spec:
+            print("Spec is not valid. `%s` field not found." % key)
+            error = True
+    if error:
+        return False
+
+    if spec['async'] not in ASYNC_OPTIONS:
+        print("Spec is not valid. %s is not a valid `async` option." % spec['async'])
+        error = True
+
+    if not isinstance(spec['metadata'], dict):
+        print("Spec is not valid. `metadata` field is invalid.")
+        error = True
+
+    for plan in spec['plans']:
+        plan_keys = ['description', 'free', 'metadata', 'parameters']
+        if 'name' not in plan:
+            print("Spec is not valid. Plan name not found.")
+            return False
+
+        for key in plan_keys:
+            if key not in plan:
+                print("Spec is not valid. Plan %s is missing a `%s` field." % (plan['name'], key))
+                return False
+
+        if not isinstance(plan['metadata'], dict):
+            print("Spec is not valid. Plan %s's `metadata` field is invalid." % plan['name'])
+            error = True
+
+        if not isinstance(plan['parameters'], list):
+            print("Spec is not valid. Plan %s's `parameters` field is invalid." % plan['name'])
+            error = True
+    if error:
+        return False
     return True
 
 
@@ -526,6 +561,10 @@ def cmdrun_prepare(**kwargs):
     if include_deps:
         spec = update_deps(project)
         write_file(spec, spec_path, True)
+
+    if not is_valid_spec(get_spec(project)):
+        print("Error! Spec failed validation check. Not updating Dockerfile.")
+        exit(1)
 
     update_dockerfile(project)
 
