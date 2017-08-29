@@ -61,6 +61,14 @@ Requires: docker
 Ansible Playbook Bundle (APB) is a lightweight application definition (meta-containers). APB
 has the following features:
 
+%package container-scripts
+Summary: scripts required for running apb in a container
+BuildArch: noarch
+Requires: %{name}
+
+%description container-scripts
+containers scripts for apb
+
 %prep
 %setup -q -n %{name}-%{version}
 sed -i '/req/d' setup.py
@@ -70,13 +78,14 @@ sed -i '/req/d' setup.py
 
 %install
 rm -rf $RPM_BUILD_ROOT
-%{pythonbin} setup.py install -O1 --skip-build --root $RPM_BUILD_ROOT
-install -d -m 755 $RPM_BUILD_ROOT/%{_mandir}/man1/
-cp docs/apb.1 $RPM_BUILD_ROOT/%{_mandir}/man1/apb.1
+%{pythonbin} setup.py install -O1 --skip-build --root %{buildroot}
+install -d -m 755 %{buildroot}/%{_mandir}/man1/
+cp docs/apb.1 %{buildroot}/%{_mandir}/man1/apb.1
+install -d  %{buildroot}%{_bindir}
+install -m 755 apb-wrapper %{buildroot}%{_bindir}/apb-wrapper
 
 %clean
 rm -rf $RPM_BUILD_ROOT
-
 
 %files
 %{_bindir}/apb
@@ -84,5 +93,8 @@ rm -rf $RPM_BUILD_ROOT
 %{python_sitelib}/apb/*
 %{python_sitelib}/apb-*.egg-info
 %{_mandir}/man1/apb.1*
+
+%files container-scripts
+%{_bindir}/apb-wrapper
 
 %changelog

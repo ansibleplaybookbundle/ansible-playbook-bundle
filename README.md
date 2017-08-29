@@ -12,12 +12,28 @@ An **Ansible Playbook Bundle (APB)** is a lightweight application definition (me
 ##### Prerequisites
 [Docker](https://www.docker.com/) must be correctly [installed](https://docs.docker.com/engine/installation/) and running on the system.
 
+##### Running from a container
+
+Create an alias in your .bashrc or somewhere else sane for your shell:  
+`docker run --rm --privileged -v $PWD:/mnt -v $HOME/.kube:/.kube -v /var/run/docker.sock:/var/run/docker.sock -u $UID docker.io/ansibleplaybookbundle/apb'`
+
+You should be able to start working by running 'apb init *org/repo*. The first run in particular may take awhile to return while the image is pulled.
+
+If you would prefer to use atomic rather than an alias this is also possible:  
+`atomic run docker.io/ansibleplaybookbundle/apb init foo/bar`
+
+There are three tags to choose from:  
+**latest**: more stable, less frequent releases  
+**nightly**: following upstream commits, installed from RPM  
+**canary**: following upstream commits, installed from source build  
+
 ##### RPM Installation
 
 For RHEL or CentOS 7:
 ```
 su -c 'wget https://copr.fedorainfracloud.org/coprs/g/ansible-service-broker/ansible-service-broker/repo/epel-7/group_ansible-service-broker-ansible-service-broker-epel-7.repo -O /etc/yum.repos.d/ansible-service-broker.repo'
 
+sudo yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 sudo yum -y install apb
 ```
 
@@ -45,7 +61,7 @@ source /tmp/apb/bin/activate
 ```
 Install requirements and run the setup script (requires python)
 ```
-pip install -r src/requirements.txt && python setup.py install
+cd ansible-playbook-bundle && pip install -U setuptools && pip install -r src/requirements.txt && python setup.py install
 ```
 Reactivate the `apb` virtualenv in other shell sessions using `source /tmp/apb/bin/activate` if needed.
 
