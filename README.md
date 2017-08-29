@@ -15,7 +15,7 @@ An **Ansible Playbook Bundle (APB)** is a lightweight application definition (me
 ##### Running from a container
 
 Create an alias in your .bashrc or somewhere else sane for your shell:  
-`docker run --rm --privileged -v $PWD:/mnt -v $HOME/.kube:/.kube -v /var/run/docker.sock:/var/run/docker.sock -u $UID docker.io/ansibleplaybookbundle/apb'`
+`alias apb='docker run --rm --privileged -v $PWD:/mnt -v $HOME/.kube:/.kube -v /var/run/docker.sock:/var/run/docker.sock -u $UID docker.io/ansibleplaybookbundle/apb'`
 
 You should be able to start working by running 'apb init *org/repo*. The first run in particular may take awhile to return while the image is pulled.
 
