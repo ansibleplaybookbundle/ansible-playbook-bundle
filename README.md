@@ -63,6 +63,13 @@ Install requirements and run the setup script (requires python)
 ```
 cd ansible-playbook-bundle && pip install -U setuptools && pip install -r src/requirements.txt && python setup.py install
 ```
+
+Optionally, if actively developing on the project, install the
+testing requirements:
+```
+pip install -r src/test-requirements.txt
+```
+
 Reactivate the `apb` virtualenv in other shell sessions using `source /tmp/apb/bin/activate` if needed.
 
 ###### Installing from source - Tito
