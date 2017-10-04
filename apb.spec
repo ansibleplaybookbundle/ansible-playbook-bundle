@@ -24,7 +24,7 @@
 %endif
 
 Name: apb
-Version: 0.2.4
+Version: 0.2.5
 Release: 1%{build_timestamp}%{?dist}
 Summary: Ansible Playbook Bundle (APB) is a lightweight application definition (meta-container).
 
@@ -98,6 +98,21 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/apb-wrapper
 
 %changelog
+* Wed Oct 04 2017 Jason Montleon <jmontleo@redhat.com> 0.2.5-1
+- 1497819 - Remove image (#121) (david.j.zager@gmail.com)
+- Changed setup.py URL and changed version in apb init (#128)
+  (dymurray@redhat.com)
+- Update to version 0.2.6 - pypi upload errors on 0.2.5 (dymurray@redhat.com)
+- Bumping to 0.2.5-2 (dymurray@redhat.com)
+- Update to 0.2.5 (dymurray@redhat.com)
+- Added versioning explanation to developers.md (#127) (dymurray@redhat.com)
+- [Proposal] Versioning of APBs (#117) (dymurray@redhat.com)
+- Relist support (#124) (ernelson@redhat.com)
+- fixing issue 125 (#126) (Shawn.Hurley21@gmail.com)
+- adding ability to authenticate to the broker. (#123)
+  (Shawn.Hurley21@gmail.com)
+- This fixes issue-112. (#113) (Shawn.Hurley21@gmail.com)
+
 * Tue Sep 19 2017 Jason Montleon <jmontleo@redhat.com> 0.2.4-1
 - Update README.md (#114) (wmeng@redhat.com)
 - Adding fix to apb tool to clean up on failed test pod run (#109)
