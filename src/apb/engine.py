@@ -5,23 +5,22 @@ import base64
 import shutil
 import string
 import subprocess
-import ruamel.yaml
 import json
 import requests
 import urllib3
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-# Disable insecure request warnings from both packages
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-
 import docker
 import docker.errors
+import ruamel.yaml
 
 from ruamel.yaml import YAML
 from openshift import client as openshift_client, config as openshift_config
 from jinja2 import Environment, FileSystemLoader
 from kubernetes import client as kubernetes_client
 from kubernetes.client.rest import ApiException
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+# Disable insecure request warnings from both packages
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 ROLES_DIR = 'roles'
 
@@ -346,9 +345,11 @@ def update_dockerfile(project, dockerfile):
 
 def load_source_dependencies(roles_path):
     print('Trying to guess list of dependencies for APB')
-    output = subprocess.check_output("/bin/grep -R \ image: "+roles_path+"|awk '{print $3}'", stderr=subprocess.STDOUT, shell=True)
+    cmd = "/bin/grep -R \ image: {} |awk '{print $3}'".format(roles_path)
+    output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
     if "{{" in output or "}}" in output:
-        print("Detected variables being used for dependent image names. Please double check the dependencies in your spec file.")
+        print("Detected variables being used for dependent image names. " +
+              "Please double check the dependencies in your spec file.")
     return output.split('\n')[:-1]
 
 
@@ -390,9 +391,10 @@ def relist_service_broker(kwargs):
         else:
             headers = {'Authorization': token}
 
-        response = requests.request("get",
-                broker_resource_url(cluster_host, broker_name),
-                verify=kwargs['verify'], headers=headers)
+        response = requests.request(
+            "get",
+            broker_resource_url(cluster_host, broker_name),
+            verify=kwargs['verify'], headers=headers)
 
         if response.status_code != 200:
             errMsg = "Received non-200 status code while retrieving broker: {}\n".format(broker_name) + \
@@ -401,28 +403,29 @@ def relist_service_broker(kwargs):
             raise Exception(errMsg)
 
         spec = response.json().get('spec', None)
-        if spec == None:
+        if spec is None:
             errMsg = "Spec not found in broker reponse. Response body: \n{}".format(response.text)
             raise Exception(errMsg)
 
         relist_requests = spec.get('relistRequests', None)
-        if relist_requests == None:
+        if relist_requests is None:
             errMsg = "relistRequests not found within the spec of broker: {}\n".format(broker_name) + \
-                    "Are you sure you are using a ServiceCatalog of >= v0.0.21?"
+                     "Are you sure you are using a ServiceCatalog of >= v0.0.21?"
             raise Exception(errMsg)
 
         inc_relist_requests = relist_requests + 1
 
         headers['Content-Type'] = 'application/strategic-merge-patch+json'
-        response = requests.request("patch",
-                broker_resource_url(cluster_host, broker_name),
-                json={'spec': {'relistRequests': inc_relist_requests}},
-                verify=kwargs['verify'], headers=headers)
+        response = requests.request(
+            "patch",
+            broker_resource_url(cluster_host, broker_name),
+            json={'spec': {'relistRequests': inc_relist_requests}},
+            verify=kwargs['verify'], headers=headers)
 
         if response.status_code != 200:
-            errMsg = "Received non-200 status code while patching relistRequests of broker: {}\n".format(broker_name) + \
-                "Response body:\n" + \
-                str(response.text)
+            errMsg = "Received non-200 status code while patching relistRequests of broker: {}\n".format(
+                broker_name) + \
+                "Response body:\n{}".format(str(response.text))
             raise Exception(errMsg)
 
         print("Successfully relisted the Service Catalog")
@@ -451,7 +454,7 @@ def create_role_binding():
             },
         }
         api.create_namespaced_role_binding("default", role_binding)
-    except Exception as e:
+    except Exception:
         api = openshift_client.OapiApi()
         # HACK: this is printing an error but is still actually creating the
         # role binding.
@@ -468,14 +471,13 @@ def create_service_account():
             'apiVersion': 'v1',
             'kind': 'ServiceAccount',
             'metadata': {
-                'name':'service-account-1',
+                'name': 'service-account-1',
                 'namespace': 'default',
             },
         }
         api.create_namespaced_service_account("default", service_account)
         print("Created Serice Account")
     except Exception as e:
-        pod_name = None
         print("failed - %s" % e)
 
 
@@ -506,7 +508,6 @@ def create_image_pod(image_name):
         api.create_namespaced_pod("default", pod_manifest)
         print("Created Pod")
     except Exception as e:
-        pod_name = None
         print("failed - %s" % e)
 
 
@@ -518,7 +519,10 @@ def retrieve_test_result():
             count += 1
             openshift_config.load_kube_config()
             api = kubernetes_client.CoreV1Api()
-            api_response = api.connect_post_namespaced_pod_exec("test", "default", command="/usr/bin/test-retrieval", tty=False)
+            api_response = api.connect_post_namespaced_pod_exec(
+                "test", "default",
+                command="/usr/bin/test-retrieval",
+                tty=False)
             if "non-zero exit code" not in api_response:
                 return api_response
         except ApiException as e:
@@ -660,7 +664,7 @@ def print_list(services):
 
     template = "{id:%d}{name:%d}{description:%d}" % (max_id + 2, max_name + 2, max_desc + 2)
     print(template.format(id="ID", name="NAME", description="DESCRIPTION"))
-    for service in sorted(services, key=lambda s:s['name']):
+    for service in sorted(services, key=lambda s: s['name']):
         print(template.format(**service))
 
 
@@ -720,7 +724,6 @@ def cmdrun_init(**kwargs):
 
 def cmdrun_prepare(**kwargs):
     project = kwargs['base_path']
-    roles_path = os.path.join(project, ROLES_DIR)
     spec_path = os.path.join(project, SPEC_FILE)
     dockerfile = DOCKERFILE
     include_deps = kwargs['include_deps']
@@ -769,7 +772,7 @@ def cmdrun_build(**kwargs):
     try:
         client = docker.DockerClient(base_url='unix://var/run/docker.sock', version='auto')
         client.images.build(path=project, tag=tag, dockerfile=dockerfile)
-    except docker.errors.DockerException as e:
+    except docker.errors.DockerException:
         print("Error accessing the docker API. Is the daemon running?")
         raise
 
