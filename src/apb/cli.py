@@ -282,6 +282,13 @@ def subcmd_remove_parser(subcmd):
         dest='basic_auth_password',
         help=u'Specify the basic auth password to be used'
     )
+    subcmd.add_argument(
+        '--no-relist',
+        action='store_true',
+        dest='no_relist',
+        help=u'Do not relist the catalog after pushing an apb to the broker',
+        default=False
+    )
     return
 
 

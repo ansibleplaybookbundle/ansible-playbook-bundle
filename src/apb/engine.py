@@ -832,6 +832,9 @@ def cmdrun_remove(**kwargs):
         print("Unable to remove APB from Ansible Service Broker.")
         exit(1)
 
+    if not kwargs['no_relist']:
+        relist_service_broker(kwargs)
+
     print("Successfully deleted APB")
 
 
