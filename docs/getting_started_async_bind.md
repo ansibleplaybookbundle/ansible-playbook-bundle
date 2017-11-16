@@ -9,22 +9,22 @@
         * [Deprovision](#deprovision)
         * [Bind](#bind)
         * [Test](#test)
+1. [Notes](#notes)
 1. [More Information](#more-information)
 
 ## Introduction to Ansible Playbook Bundles (APBs)
 
-In this tutorial, we'll walk through the creation of some sample APBs.  We will create actions for them to allow provision, deprovision, bind, and unbind.  You can find more information about the design of APBs in the [design doc](https://github.com/fusor/ansible-playbook-bundle/blob/master/docs/design.md).  
+In this tutorial, we'll walk through the creation of some sample APBs.  We will create actions for them to allow provision, deprovision, bind, and unbind.  You can find more information about the design of APBs in the [design doc](https://github.com/fusor/ansible-playbook-bundle/blob/master/docs/design.md).  More in-depth information about writing APBs is available in the [developers doc](developers.md)
 
 *Note:  For the remainder of this tutorial, substitute your own information for items marked in brackets, for example `<host>:<port>` might need to be replaced with `172.17.0.1.nip.io:8443`.*
 
-**Note: If you are using a 3.6 version of the catalog, you must use `--username admin --password` for the list, push, remove and bootstrap commands**
 ## Development Environment
 
 Before getting started with APBs, we need to get your system set up to create them.
 
-First, make sure your system is properly running [OpenShift Origin](https://www.openshift.org/).  You should be able to successfully execute `oc cluster up`.  Instructions can be found on the OpenShift Origin [getting started doc](https://github.com/openshift/origin/blob/master/docs/cluster_up_down.md).
+First, make sure your system is properly running [OpenShift Origin](https://www.openshift.org/).  You should be running both the service catalog and Ansible Service Broker (ASB). Instructions can be found on the ASB [getting started doc](https://github.com/openshift/ansible-service-broker#getting-started-with-the-ansible-service-broker).
 
-Next, install the APB tools as documented in the [README](https://github.com/fusor/ansible-playbook-bundle/blob/master/README.md#install).  To check, you can run `apb help` and check for a valid response.
+Next, install the APB tools as documented in the [APB CLI Tooling doc](https://github.com/fusor/ansible-playbook-bundle/blob/master/docs/apb_cli.md#installing-the-apb-tool).  To check, you can run `apb help` and check for a valid response.
 ```
 $ apb help
 usage: apb [-h] [--debug] [--project BASE_PATH]
@@ -52,30 +52,8 @@ subcommand:
 
 ```
 
-Then, create a local development environment with both a [Service Catalog](https://github.com/kubernetes-incubator/service-catalog) and [Ansible Service Broker](https://github.com/openshift/ansible-service-broker).  You can do this using [catasb](https://github.com/fusor/catasb), a collection of scripts which use Ansible to automate the set up of the cluster for you on a local host, ec2, or virtual machines.  For this tutorial we'll be assuming the locally hosted environment which is documented for [linux](https://github.com/fusor/catasb/blob/master/local/linux/README.md) and [mac](https://github.com/fusor/catasb/blob/master/local/mac/README.md).  After completing the set up, take note of the OpenShift cluster **host:port** output by the catasb Ansible scripts so you can login using the command line for the remainder of the tutorial.  It will look something like:
-
-```bash
-$ git clone https://github.com/fusor/catasb.git
-$ cd catasb/local
-$ ./reset_environment.sh
-
-...
-
-TASK [debug] *********************************************************************************************************************************
-ok: [localhost] => {
-    "msg": [
-        "Hostname: <oc-cluster-host>",
-        "Next steps:",
-        "Visit https://<oc-cluster-host>:<oc-cluster-port> for the web console",
-        "OR",
-        "For CLI access:",
-        "oc login --insecure-skip-tls-verify <oc-cluster-host>:<oc-cluster-port> -u admin -p admin",
-    ]
-}
-```
-
 ## Creating your first APB
-In this tutorial, we'll create an APB for a containerized [hello world application](https://hub.docker.com/r/ansibleplaybookbundle/hello-world/).  We'll work through a basic APB that will mirror the [hello-world-apb](https://github.com/fusor/apb-examples/tree/master/hello-world-apb) in the [apb-examples](https://github.com/fusor/apb-examples) project.
+In this tutorial, we'll create an APB for a containerized [hello world application](https://hub.docker.com/r/ansibleplaybookbundle/hello-world/).  We'll work through a basic APB that will mirror the [hello-world-apb](https://github.com/ansibleplaybookbundle/hello-world-apb).
 
 ### Using apb init
 Our first task is to create the skeleton for your app using the apb tool.  The command for this is simple:
@@ -98,7 +76,7 @@ my-test-apb/
         └── tasks
             └── main.yml
 ```
-Two files were created at the root directory, an `apb.yml` and a `Dockerfile`.  These are the minimum required for any APB.  For more information, visit the [design doc](https://github.com/fusor/ansible-playbook-bundle/blob/master/docs/design.md).
+Two files were created at the root directory, an `apb.yml` and a `Dockerfile`.  These are the minimum required for any APB.  For more information about the apb spec, visit the [developer doc](developers.md#apb-spec-file).  There is also an explanation of what we can do in the [Dockerfile](developers.md#dockerfile).
 ```yaml
 # apb.yml
 version: 1.0
@@ -138,10 +116,12 @@ $ apb prepare
 FROM ansibleplaybookbundle/apb-base
 
 LABEL "com.redhat.apb.spec"=\
-"<----------------------Long-Base64-Encoded-String--------------------------\
-----------------------------------------------------------------------------\
-----------------------------------------------------------------------------\
------------------------>"
+"dmVyc2lvbjogMS4wCm5hbWU6IG15LXRlc3QtYXBiCmRlc2NyaXB0aW9uOiBUaGlzIGlzIGEgc2Ft\
+cGxlIGFwcGxpY2F0aW9uIGdlbmVyYXRlZCBieSBhcGIgaW5pdApiaW5kYWJsZTogRmFsc2UKYXN5\
+bmM6IG9wdGlvbmFsCm1ldGFkYXRhOgogIGRpc3BsYXlOYW1lOiBteS10ZXN0CnBsYW5zOgogIC0g\
+bmFtZTogZGVmYXVsdAogICAgZGVzY3JpcHRpb246IFRoaXMgZGVmYXVsdCBwbGFuIGRlcGxveXMg\
+bXktdGVzdC1hcGIKICAgIGZyZWU6IFRydWUKICAgIG1ldGFkYXRhOiB7fQogICAgcGFyYW1ldGVy\
+czogW10="
 
 COPY playbooks /opt/apb/actions
 COPY roles /opt/ansible/roles
@@ -151,39 +131,27 @@ USER apb
 
 At this point we have a fully formed APB that we can build.  If you skipped the apb prepare, apb build will still prepare the apb before building the image. You can optionally specify the organization (ie. ansibleplaybookbundle) here.
 ```bash
-# Example without organization
 $ apb build
-
-# Example with organization
-$ apb build --org=my-org
 ```
 
-At this point, you can push the new APB directly to the Ansible Service Broker.
+At this point, you can push the new APB image to the local OpenShift registry.
 ```bash
-$ apb push
-```
-**_Alternatively_**, you can push the APB to the dockerhub registry using the normal docker command and reload the Ansible Service Broker's list of APBs using `apb bootstrap`
-```bash
-$ docker push <my-org>/my-test-apb
-...
-
-$ apb bootstrap
-Successfully bootstrapped Ansible Service Broker
+$ apb push -o
 ```
 
 Querying the ansible service broker will now show your new apb listed.
 ```bash
 $ apb list
-ID                   NAME                  DESCRIPTION
-<--- ID string --->  apb-push-my-test-apb  This is a sample application generated by apb init
+ID                                NAME            DESCRIPTION                                         
+< ------------ ID ------------->  dh-my-test-apb  This is a sample application generated by apb init  
 ```
 
-Visiting the OpenShift console UI at https://<oc-cluster-host>:<oc-cluster-port> will now display the new Ansible Playbook Bundle named my-test-apb in the catalog under the **_All_** tab.
+Visiting the OpenShift console UI will now display the new Ansible Playbook Bundle named my-test-apb in the catalog under the **_All_** tab and **_Other_** tab.
 
 ### Actions
 The brand new APB created in the last section doesn't do very much.  For that, we'll have to add some actions.  The actions supported are [provision](#provision), [deprovision](#deprovision), [bind](#bind), [unbind](#unbind), and [test](#test).  We'll add each of these actions in the following sections.
 
-Before we begin, make sure you're logged in through the command line.
+Before we begin, make sure you're logged in through the command line.  This will insure the apb tool can interact with OpenShift and the Ansible Service Broker (ASB).
 ```
 # substitute your information for <oc-cluster-host>:<oc-cluster-port>
 oc login --insecure-skip-tls-verify <oc-cluster-host>:<oc-cluster-port> -u admin -p admin
@@ -236,11 +204,18 @@ Feel free to try this now by clicking on the **my-test** APB and deploying it to
 
 ![provision-my-test](images/provision-my-test.png)
 
-If you look at the pod resources for the getting-started project, you will see a container spawn and then complete.  By looking at the log for that pod you can see that our APB executed with no changes. You can use the UI at https://<oc-cluster-host>:<oc-cluster-port>/console/project/getting-started/browse/pods or the command line
+If you look carefully, when the provision is executing, a new namespace was created with the name `dh-my-test-apb-prov-<random>`.  In development mode, it will persist, but usually this namespace would be deleted after successful completion.  By looking at the pod resources, you can see the log for the execution of the APB.  In order to find these namespaces you can view all namespaces and sort by creation date or use `oc get ns`.
 
 ```bash
-$ oc project getting-started
-Now using project "getting-started" on server "https://172.17.0.1:8443".
+$ oc get ns
+NAME                                STATUS    AGE
+ansible-service-broker              Active    1h
+default                             Active    1h
+dh-my-test-apb-prov-<random>        Active    4m
+...
+
+$ oc project dh-my-test-apb-prov-<random>
+Now using project "dh-my-test-apb-prov-<random>" on server "<oc-cluster-host>:<oc-cluster-port>".
 
 $ oc get pods
 NAME             READY     STATUS      RESTARTS   AGE
@@ -293,30 +268,34 @@ The `selector` section is a [label](https://docs.openshift.org/latest/architectu
 
 In the `containers` section, we have specified the a [container](https://docs.openshift.org/latest/architecture/core_concepts/containers_and_images.html#containers) with a hello-world app running on port 8080 on TCP.  The [image](https://docs.openshift.org/latest/architecture/core_concepts/containers_and_images.html#docker-images) is stored on [docker.io](https://hub.docker.com/)/[ansibleplaybookbundle](https://hub.docker.com/r/ansibleplaybookbundle/)/[hello-world](https://hub.docker.com/r/ansibleplaybookbundle/hello-world/).
 
-For more information, you can visit the ansible-kubernetes-modules [code](https://github.com/ansible/ansible-kubernetes-modules/blob/master/library/openshift_v1_deployment_config.py) documentation for a full accounting of all fields.
+For more information, the [developers guide](developers.md#deployment-config) has more detail and you can also visit the ansible-kubernetes-modules [code](https://github.com/ansible/ansible-kubernetes-modules/blob/master/library/openshift_v1_deployment_config.py) documentation for a full accounting of all fields.
 
 
-If you build the APB with `apb build` and provision the apb, you will see the APB pod spawn and complete, just like before, but now there will be a new running pod as well.  There will also be a new deployment config.
+If you build, push, and provision the apb there will be a new running pod and a new deployment config.
+
+Build and Push 
+```
+$ apb build
+$ apb push -o
+```
+Provision using the Web Console UI
+
+Check your resources
 ```
 $ oc project getting-started
-$ oc get pods
-NAME                                       READY     STATUS      RESTARTS   AGE
-apb-3b21151c-310f-4d8c-8189-562eb41c871b   0/1       Completed   0          19m  # old
-apb-76e745f7-2583-4d9a-af39-8e88eba4deb8   0/1       Completed   0          1m   # newer
-my-test-1-dhmjx                            1/1       Running     0          1m   # running application pod
+$ oc get all
+NAME         REVISION   DESIRED   CURRENT   TRIGGERED BY
+dc/my-test   1          1         1         config
 
-$ oc get dc
-NAME      REVISION   DESIRED   CURRENT   TRIGGERED BY
-my-test   1          1         1         config
+NAME           DESIRED   CURRENT   READY     AGE
+rc/my-test-1   1         1         1         35s
 
-$ oc describe dc my-test
-Name:		my-test
-Namespace:	getting-started
-Created:	4 minutes ago
-...
-
+NAME                 READY     STATUS    RESTARTS   AGE
+po/my-test-1-2pw4t   1/1       Running   0          33s
 ```
 You will also be able to see the deployed application in the console UI at https://<oc-cluster-host>:<oc-cluster-port>/console/project/getting-started/overview.  The only way to use this pod currently is to use `oc describe pods/<pod-name>`, to find out it's IP address and access it directly.  If we had multiple pods, they'd be accessed separately.  To treat them like a single host, we'd need to create a **_service_**
+
+To clean up before moving on and allow us to provision again, feel free to delete the getting-started namespace and recreate it or create a new one.
 
 ##### Provision - Creating a service
 We want to use multiple [pods](https://docs.openshift.org/latest/architecture/core_concepts/pods_and_services.html#pods), load balance them, and create a [service](https://docs.openshift.org/latest/architecture/core_concepts/pods_and_services.html#services) so that a user can access them as a single host.  Let's create that service and modify the same `provision-my-test-apb/tasks/main.yml` by adding the following:
@@ -338,11 +317,11 @@ We want to use multiple [pods](https://docs.openshift.org/latest/architecture/co
 ```
 The `selector` will allow the *my-test* service to include the correct pods.  The `ports` will take the target port from the pods (8080) and expose them as a single port for the service (80).  Notice the application was running on 8080 but has now been made available on the default http port of 80.  The `name` field of the port will allow us to specify this port in the future with other resources.  More information is available in the [k8s_v1_service module](https://github.com/ansible/ansible-kubernetes-modules/blob/master/library/k8s_v1_service.py).
 
-If you rebuild the APB with `apb build` and provision it, you will see a new service in the UI or on the command line.  In the UI (), you can click on the new service under **_Networking_** in the application on the overview page or under **_Applications -> Services_**.  The service's IP address will be shown which you can use to access the load balanced application.  To view the service information from the command line, you can do the following:
+If you rebuild the APB with `apb build`, push it using `apb push -o`, and provision it, you will see a new service in the UI or on the command line.  In the UI (), you can click on the new service under **_Networking_** in the application on the overview page or under **_Applications -> Services_**.  The service's IP address will be shown which you can use to access the load balanced application.  To view the service information from the command line, you can do the following:
 ```
-oc project getting-started
-oc get services
-oc describe services/my-test
+$ oc project getting-started
+$ oc get services
+$ oc describe services/my-test
 ```
 The describe command will show the IP address to access the service. Using an IP address for users to access our application isn't generally what we want.  Generally, we want to create a [route](https://docs.openshift.org/latest/architecture/core_concepts/routes.html).
 
@@ -360,7 +339,7 @@ We want to expose external access to our application through a reliable named [r
     spec_port_target_port: web
 ```
 The `to_name` is name of the target service.  `spec_port_target_port` refers to the name of the target service's port.  More information is available in the [openshift_v1_route module](https://github.com/ansible/ansible-kubernetes-modules/blob/master/library/openshift_v1_route.py).
-If you rebuild the APB with `apb build` and provision it, you will see the new route created.  On the console UI overview page for the getting-started project, you will now see an active and clickable route link listed on the application.  Clicking on the route or visiting the URL will bring up the hello-world app.  From the command line, you can also view the route information.
+If you rebuild the APB with `apb build`, push it using `apb push -o`, and provision it, it, you will see the new route created.  On the console UI overview page for the getting-started project, you will now see an active and clickable route link listed on the application.  Clicking on the route or visiting the URL will bring up the hello-world app.  From the command line, you can also view the route information.
 ```
 $ oc project getting-started
 
@@ -440,7 +419,7 @@ In addition, Kubernetes has not yet implemented [asynchronous binding](https://g
 This tutorial is based on the async bind version of [hello-world-db-app](https://github.com/ansibleplaybookbundle/hello-world-db-apb/tree/async-bind).
 
 ##### Bind - Prep
-To give us a good starting point, we'll create the necessary files for provision and deprovisioning PostgreSQL. A more in depth example can be found at the [APB example for Postgres](https://github.com/ansibleplaybookbundle/rhscl-postgresql-apb).
+To give us a good starting point, we'll create the necessary files for provision and deprovisioning PostgreSQL. A more in-depth example can be found at the [APB example for Postgres](https://github.com/ansibleplaybookbundle/rhscl-postgresql-apb).
 
 ```
 apb init my-pg-apb --bindable
@@ -747,6 +726,12 @@ Edit the `roles/bind-my-pg-apb/tasks/main.yml` and add the following:
     state: absent
 ```
 
+When all this is complete, build and push your APB.
+```bash
+apb build
+apb push -o
+```
+
 At this point, the APB can create a fully functional Postgres database on our cluster and create a new database for use by our application.  Let's test it out now.
 
 ##### Bind - Execute from the user interface
@@ -805,7 +790,6 @@ We have added a test command, `apb test` which can be used to run the test actio
 `asb_save_test_result` [moudule](https://github.com/fusor/ansible-asb-modules) will allow you to save test results and allows the `apb test` command to return them. The APB pod will stay alive, for the tool to retrieve test results.
 Example: 
 ```yaml
----
  - name: url check for media wiki
    uri:
      url: "http://{{ route.route.spec.host }}"
@@ -827,14 +811,28 @@ Example:
       fail: false
     when: webpage.status == 200
 ```
-### Using APB Push
+
+### Notes
+
+#### Using `apb push` with Local OpenShift registry (recommended)
+To test an APB you have built with the internal openshift registry, you can use `apb push -o`. This command takes the name of the OpenShift namespace you wish to push the image to. In order to use this feature, the Ansible Service Broker you are running must be configured to bootstrap from the local_openshift registry. Please see the [config file documentation](https://github.com/openshift/ansible-service-broker/blob/master/docs/config.md) to configure the registry for type `local_openshift`. The following command will build the image with the namespace you passed in as a parameter (by default `openshift`) and push it to the internal registry.
+
+```
+apb push --openshift
+```
+or 
+```
+apb push -o
+```
+
+#### Using `apb push` with Ansible Service Broker mock registry
 To test an APB you have built without pushing your image to a registry, you can use `apb push`. This command takes the Ansible Service Broker's route as an argument and will push the base64 encoded spec into the list of available APBs for the Broker to deploy. In order to use this feature, the Ansible Service Broker you are running must be configured to run in development mode. In the [config file](https://github.com/openshift/ansible-service-broker/blob/master/etc/ex.dev.config.yaml#L21), set `devbroker` to `true`. This enables an endpoint to the broker at `/apb/spec` that a user can POST APBs to.
 
 ```
-apb push <broker_route>
+apb push [--broker <broker_route>]
 ```
 
-You should now be able to see your APB in the listed specs available in the Broker.
+You should now be able to see your APB in the service catalog.
 
 #### Specifying Route for Broker
 To get the route of the Ansible Service Broker in OpenShift:
@@ -847,7 +845,8 @@ If you are running the Broker manually, you must include the Port as well as IP 
 
 ### More information
 * [Design](design.md) - overall design of Ansible Playbook Bundles
-* [Developers](developers.md) - in depth explanation of Ansible Playbook Bundles
+* [Developers](developers.md) - in-depth explanation of Ansible Playbook Bundles
+* [APB CLI Tool](apb_cli.md) - installation and usage of the `apb` cli tool
 * [OpenShift Origin Docs](https://docs.openshift.org/latest/welcome/index.html)
 * The [ansible-kubernetes-modules](https://github.com/ansible/ansible-kubernetes-modules) project.
 * [Example APBs](https://github.com/fusor/apb-examples)
