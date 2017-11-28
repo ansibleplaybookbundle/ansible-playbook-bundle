@@ -36,6 +36,10 @@ DOCKERFILE = 'Dockerfile'
 EX_DOCKERFILE = 'Dockerfile.j2'
 EX_DOCKERFILE_PATH = os.path.join(DAT_PATH, EX_DOCKERFILE)
 
+MAKEFILE = 'Makefile'
+EX_MAKEFILE = 'Makefile.j2'
+EX_MAKEFILE_PATH = os.path.join(DAT_PATH, EX_MAKEFILE)
+
 ACTION_TEMPLATE_DICT = {
     'provision': {
         'playbook_template': 'playbooks/playbook.yml.j2',
@@ -81,6 +85,16 @@ VERSION_LABEL = 'com.redhat.apb.version'
 def load_dockerfile(df_path):
     with open(df_path, 'r') as dockerfile:
         return dockerfile.readlines()
+
+
+def load_makefile(apb_dict, params):
+    env = Environment(loader=FileSystemLoader(DAT_PATH), trim_blocks=True)
+    template = env.get_template(EX_MAKEFILE)
+
+    if not params:
+        params = []
+
+    return template.render(apb_dict=apb_dict, params=params)
 
 
 def load_example_specfile(apb_dict, params):
@@ -697,6 +711,7 @@ def cmdrun_init(**kwargs):
     current_path = kwargs['base_path']
     bindable = kwargs['bindable']
     async = kwargs['async']
+    dockerhost = kwargs['dockerhost']
     skip = {
         'provision': kwargs['skip-provision'],
         'deprovision': kwargs['skip-deprovision'],
@@ -707,6 +722,7 @@ def cmdrun_init(**kwargs):
 
     apb_tag_arr = kwargs['tag'].split('/')
     apb_name = apb_tag_arr[-1]
+    app_org = apb_tag_arr[0]
     if apb_name.lower().endswith("-apb"):
         app_name = apb_name[:-4]
     else:
@@ -717,9 +733,11 @@ def cmdrun_init(**kwargs):
     apb_dict = {
         'name': apb_name,
         'app_name': app_name,
+        'app_org': app_org,
         'description': description,
         'bindable': bindable,
-        'async': async
+        'async': async,
+        'dockerhost': dockerhost
     }
 
     project = os.path.join(current_path, apb_name)
@@ -735,12 +753,16 @@ def cmdrun_init(**kwargs):
 
     spec_path = os.path.join(project, SPEC_FILE)
     dockerfile_path = os.path.join(os.path.join(project, DOCKERFILE))
+    makefile_path = os.path.join(os.path.join(project, MAKEFILE))
 
     specfile_out = load_example_specfile(apb_dict, [])
     write_file(specfile_out, spec_path, kwargs['force'])
 
     dockerfile_out = load_dockerfile(EX_DOCKERFILE_PATH)
     write_file(dockerfile_out, dockerfile_path, kwargs['force'])
+
+    makefile_out = load_makefile(apb_dict, [])
+    write_file(makefile_out, makefile_path, kwargs['force'])
 
     generate_playbook_files(project, skip, apb_dict)
     print("Successfully initialized project directory at: %s" % project)
