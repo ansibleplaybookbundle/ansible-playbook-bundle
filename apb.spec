@@ -24,7 +24,7 @@
 %endif
 
 Name: apb
-Version: 1.1.0
+Version: 1.1.1
 Release: 1%{build_timestamp}%{?dist}
 Summary: Ansible Playbook Bundle (APB) is a lightweight application definition (meta-container).
 
@@ -98,6 +98,14 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/apb-wrapper
 
 %changelog
+* Mon Dec 04 2017 Jason Montleon <jmontleo@redhat.com> 1.1.1-1
+- Fixed minor errors in getting_started.md (cchase@redhat.com)
+- Fix example for apb remove. (cchase@redhat.com)
+- Issue #169.  Fix relist error when using apb remove. (cchase@redhat.com)
+- Add Makefile to apb init (#149) (phil.brookes@gmail.com)
+- Update documentation (#165) (cchase@redhat.com)
+- bump release (#162) (jmrodri@gmail.com)
+
 * Tue Nov 07 2017 Jason Montleon <jmontleo@redhat.com> 1.0.4-1
 - Bug 1507111 - Add docs for apb push -o (#161) (dymurray@redhat.com)
 - Bug 1507111 - Add support to push to internal openshift registry (#159)
