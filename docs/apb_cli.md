@@ -41,19 +41,19 @@ care of the details so they should be easy to deploy.
 
 Pull the container:
 ```bash
-docker pull docker.io/ansibleplaybookbundle/apb
+docker pull docker.io/ansibleplaybookbundle/apb-tools
 ```
 
 Create an alias in your `.bashrc` or somewhere else sane for your shell:
 ```bash
-alias apb='docker run --rm --privileged -v $PWD:/mnt -v $HOME/.kube:/.kube -v /var/run/docker.sock:/var/run/docker.sock -u $UID docker.io/ansibleplaybookbundle/apb'
+alias apb='docker run --rm --privileged -v $PWD:/mnt -v $HOME/.kube:/.kube -v /var/run/docker.sock:/var/run/docker.sock -u $UID docker.io/ansibleplaybookbundle/apb-tools'
 ```
 
 You should be able to start working by running `apb init my_apb`. The first run may take awhile if you did not pull the image.
 
 If you would prefer to use atomic rather than an alias this is also possible:
 ```bash
-atomic run docker.io/ansibleplaybookbundle/apb init my_apb
+atomic run docker.io/ansibleplaybookbundle/apb-tools init my_apb
 ```
 
 There are three tags to choose from:
