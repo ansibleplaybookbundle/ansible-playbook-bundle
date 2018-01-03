@@ -16,6 +16,7 @@ AVAILABLE_COMMANDS = {
     'build': 'Build and package APB container',
     'push': 'Push local APB spec to an Ansible Service Broker',
     'remove': 'Remove APBs from the target Ansible Service Broker',
+    'serviceinstance': 'Create a ServiceInstance template based on apb.yaml',
     'bootstrap': 'Tell Ansible Service Broker to reload APBs from the container repository',
     'test': 'Test the APB',
     'run': 'Run APB'
@@ -429,6 +430,10 @@ def subcmd_run_parser(subcmd):
         dest='dockerfile',
         help=u'Name of Dockerfile to build with'
     )
+    return
+
+
+def subcmd_serviceinstance_parser(subcmd):
     return
 
 
