@@ -412,7 +412,7 @@ def get_asb_route():
                 print("Still failed to find a route to OpenShift Ansible Broker.")
                 return None
         for route in route_list.items:
-            if route.metadata.name.find('asb-') >= 0:
+            if 'asb' in route.metadata.name and 'etcd' not in route.metadata.name:
                 asb_route = route.spec.host
     except Exception:
         asb_route = None
