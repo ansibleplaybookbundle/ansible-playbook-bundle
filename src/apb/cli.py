@@ -11,6 +11,7 @@ AVAILABLE_COMMANDS = {
     'help': 'Display this help message',
     'relist': 'Relist the APBs available within the Service Catalog',
     'list': 'List APBs from the target Ansible Service Broker',
+    'setup': 'Initialize OpenShift with APB development environment',
     'init': 'Initialize the directory for APB development',
     'prepare': 'Prepare an ansible-container project for APB packaging',
     'build': 'Build and package APB container',
@@ -214,12 +215,10 @@ def subcmd_push_parser(subcmd):
         default=u'default'
     )
     subcmd.add_argument(
-        '--openshift',
-        '-o,',
-        action='store_true',
-        dest='openshift',
-        help=u'Use internal OpenShift registry',
-        default=False
+        '--registry-route',
+        action='store',
+        dest='reg_route',
+        help=u'Route of internal OpenShift registry'
     )
     subcmd.add_argument(
         '--dockerfile',
@@ -265,6 +264,13 @@ def subcmd_push_parser(subcmd):
         dest='broker_name',
         help=u'Name of the ServiceBroker k8s resource',
         default=u'ansible-service-broker'
+    )
+    subcmd.add_argument(
+        '--push-to-broker',
+        action='store_true',
+        dest='broker_push',
+        help=u'Use Broker development endpoint at /v2/apb/',
+        default=False
     )
     return
 
@@ -430,6 +436,10 @@ def subcmd_run_parser(subcmd):
         dest='dockerfile',
         help=u'Name of Dockerfile to build with'
     )
+    return
+
+
+def subcmd_setup_parser(subcmd):
     return
 
 

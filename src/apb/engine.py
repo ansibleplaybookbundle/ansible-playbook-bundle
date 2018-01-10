@@ -16,6 +16,7 @@ import yaml
 from ruamel.yaml import YAML
 from time import sleep
 from openshift import client as openshift_client, config as openshift_config
+from openshift.helper.openshift import OpenShiftObjectHelper
 from jinja2 import Environment, FileSystemLoader
 from kubernetes import client as kubernetes_client, config as kubernetes_config
 from kubernetes.client.rest import ApiException
@@ -544,6 +545,38 @@ def create_service_account(name, namespace):
         raise e
 
 
+def create_cluster_role_binding(name, user_name, role="cluster-admin"):
+    print("Creating role binding of {} for {}".format(role, user_name))
+    try:
+        kubernetes_config.load_kube_config()
+        api = openshift_client.OapiApi()
+        # TODO: Use generateName when it doesn't throw an exception
+        api.create_cluster_role_binding(
+            {
+                'apiVersion': 'v1',
+                'kind': 'ClusterRoleBinding',
+                'metadata': {
+                    'name': name,
+                },
+                'roleRef': {
+                    'name': role,
+                },
+                'userNames': [user_name]
+            }
+        )
+    except ApiException as e:
+        raise e
+    except Exception as e:
+        # TODO:
+        # Right now you'll see something like --
+        #   Exception occurred! 'module' object has no attribute 'V1RoleBinding'
+        # Looks like an issue with the openshift-restclient...well the version
+        # of k8s included by openshift-restclient. Keeping this from below.
+        pass
+    print("Created Role Binding")
+    return name
+
+
 def create_role_binding(name, namespace, service_account, role="admin"):
     print("Creating role binding for {} in {}".format(service_account, namespace))
     try:
@@ -702,6 +735,11 @@ def broker_request(broker, service_route, method, **kwargs):
         raise Exception("Could not find route to ansible-service-broker. "
                         "Use --broker or log into the cluster using \"oc login\"")
 
+    if not broker.endswith('/ansible-service-broker'):
+        if not broker.endswith('/'):
+            broker = broker + '/'
+        broker = broker + 'ansible-service-broker'
+
     url = broker + service_route
 
     try:
@@ -850,6 +888,62 @@ def build_apb(project, dockerfile=None, tag=None):
     return tag
 
 
+def cmdrun_setup(**kwargs):
+    try:
+        docker.DockerClient(base_url='unix://var/run/docker.sock', version='auto')
+    except Exception as e:
+        print("Error! Failed to connect to Docker client. Please ensure it is running. Exception: %s" % e)
+        exit(1)
+
+    try:
+        openshift_config.load_kube_config()
+
+#        base64.b64decode(username = kubernetes_client.configuration.get_basic_auth_token().split(' ')[1]))
+#        print(kubernetes_client.configuration.password)
+        oapi = openshift_client.OapiApi()
+        projlist = oapi.list_project()
+
+    except Exception as e:
+        print("\nError! Failed to list namespaces on OpenShift cluster. Please ensure OCP is running.")
+        print("Exception: %s" % e)
+        exit(1)
+
+    try:
+        helper = OpenShiftObjectHelper(api_version='v1', kind='user')
+        user_body = {'metadata': {'name': 'apb-developer'}}
+        helper.create_object(body=user_body)
+    except Exception as e:
+        print("\nError! Failed to create APB developer user. Exception: %s" % e)
+
+    try:
+        crb = create_cluster_role_binding('apb-development', 'apb-developer')
+        print(crb)
+    except Exception as e:
+        print("\nError! %s" % e)
+
+    broker_installed = False
+    svccat_installed = False
+    proj_default_access = False
+
+    for project in projlist.items:
+        name = project.metadata.name
+        if name == "default":
+            proj_default_access = True
+        elif "ansible-service-broker" in name:
+            broker_installed = True
+        elif "service-catalog" in name:
+            svccat_installed = True
+    if broker_installed is False:
+        print("Error! Could not find OpenShift Ansible Broker namespace. Please ensure that the broker is\
+                installed and that the current logged in user has access.")
+        exit(1)
+    if svccat_installed is False:
+        print("Error! Could not find OpenShift Service Catalog namespace. Please ensure that the Service\
+                Catalog is installed and that the current logged in user has access.")
+    if proj_default_access is False:
+        print("Error! Could not find the Default namespace. Please ensure that the current logged in user has access.")
+
+
 def cmdrun_init(**kwargs):
     current_path = kwargs['base_path']
     bindable = kwargs['bindable']
@@ -951,40 +1045,12 @@ def cmdrun_push(**kwargs):
     spec = get_spec(project, 'string')
     dict_spec = get_spec(project, 'dict')
     blob = base64.b64encode(spec)
+    data_spec = {'apbSpec': blob}
     broker = kwargs["broker"]
     if broker is None:
         broker = get_asb_route()
-    data_spec = {'apbSpec': blob}
     print(spec)
-
-    if kwargs['openshift']:
-        namespace = kwargs['reg_namespace']
-        service = kwargs['reg_svc_name']
-        # Assume we are using internal registry, no need to push to broker
-        registry = get_registry_service_ip(namespace, service)
-        if registry is None:
-            print("Failed to find registry service IP address.")
-            raise Exception("Unable to get registry IP from namespace %s" % namespace)
-        tag = registry + "/" + kwargs['namespace'] + "/" + dict_spec['name']
-        print("Building image with the tag: " + tag)
-        try:
-            client = docker.DockerClient(base_url='unix://var/run/docker.sock', version='auto')
-            client.images.build(path=project, tag=tag, dockerfile=kwargs['dockerfile'])
-            openshift_config.load_kube_config()
-            token = openshift_client.configuration.api_key['authorization'].split(" ")[1]
-            client.login(username="unused", password=token, registry=registry, reauth=True)
-            client.images.push(tag)
-            print("Successfully pushed image: " + tag)
-            bootstrap(broker, kwargs.get("basic_auth_username"),
-                      kwargs.get("basic_auth_password"), kwargs["verify"])
-        except docker.errors.DockerException:
-            print("Error accessing the docker API. Is the daemon running?")
-            raise
-        except docker.errors.APIError:
-            print("Failed to login to the docker API.")
-            raise
-
-    else:
+    if kwargs['broker_push']:
         response = broker_request(kwargs["broker"], "/v2/apb", "post", data=data_spec,
                                   verify=kwargs["verify"],
                                   basic_auth_username=kwargs.get("basic_auth_username"),
@@ -996,6 +1062,38 @@ def cmdrun_push(**kwargs):
             exit(1)
 
         print("Successfully added APB to Ansible Service Broker")
+        return
+
+    namespace = kwargs['reg_namespace']
+    service = kwargs['reg_svc_name']
+    registry_route = kwargs['reg_route']
+
+    if registry_route:
+        registry = registry_route
+    else:
+        registry = get_registry_service_ip(namespace, service)
+        if registry is None:
+            print("Failed to find registry service IP address.")
+            raise Exception("Unable to get registry IP from namespace %s" % namespace)
+
+    tag = registry + "/" + kwargs['namespace'] + "/" + dict_spec['name']
+    print("Building image with the tag: " + tag)
+    try:
+        client = docker.DockerClient(base_url='unix://var/run/docker.sock', version='auto')
+        client.images.build(path=project, tag=tag, dockerfile=kwargs['dockerfile'])
+        openshift_config.load_kube_config()
+        token = openshift_client.configuration.api_key['authorization'].split(" ")[1]
+        client.login(username="unused", password=token, registry=registry, reauth=True)
+        client.images.push(tag)
+        print("Successfully pushed image: " + tag)
+        bootstrap(broker, kwargs.get("basic_auth_username"),
+                  kwargs.get("basic_auth_password"), kwargs["verify"])
+    except docker.errors.DockerException:
+        print("Error accessing the docker API. Is the daemon running?")
+        raise
+    except docker.errors.APIError:
+        print("Failed to login to the docker API.")
+        raise
 
     if not kwargs['no_relist']:
         relist_service_broker(kwargs)
@@ -1003,9 +1101,9 @@ def cmdrun_push(**kwargs):
 
 def cmdrun_remove(**kwargs):
     if kwargs["all"]:
-        route = "/v2/apb"
+        route = "/v2/apb/"
     elif kwargs["id"] is not None:
-        route = "/v2/apb" + kwargs["id"]
+        route = "/v2/apb/" + kwargs["id"]
     else:
         raise Exception("No APB ID specified.  Use --id.")
 
