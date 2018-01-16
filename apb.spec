@@ -24,7 +24,7 @@
 %endif
 
 Name: apb
-Version: 1.1.3
+Version: 1.1.4
 Release: 1%{build_timestamp}%{?dist}
 Summary: Ansible Playbook Bundle (APB) is a lightweight application definition (meta-container).
 
@@ -98,6 +98,16 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/apb-wrapper
 
 %changelog
+* Tue Jan 16 2018 David Zager <david.j.zager@gmail.com> 1.1.4-1
+- Apb run bugfixes (#200) (david.j.zager@gmail.com)
+- Update getting_started.md (#199) (josemigallas@gmail.com)
+- Update apb_cli docs (#198) (dymurray@redhat.com)
+- Remove all old references to apb push -o (#194) (dymurray@redhat.com)
+- fixes two minor doc typos (#193) (mhrivnak@hrivnak.org)
+- Don't append ansible-service-broker suffix without a check (#192)
+  (dymurray@redhat.com)
+- Generic tool improvements (#187) (dymurray@redhat.com)
+
 * Mon Jan 08 2018 David Zager <david.j.zager@gmail.com> 1.1.3-1
 - Update tito releasers (david.j.zager@gmail.com)
 - Use the routing prefix for apb commands (#186) (rhallise@redhat.com)
