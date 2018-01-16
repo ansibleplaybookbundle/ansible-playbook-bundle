@@ -528,20 +528,23 @@ def create_service_account(name, namespace):
     try:
         kubernetes_config.load_kube_config()
         api = kubernetes_client.CoreV1Api()
-        service_account = api.create_namespaced_service_account(
+        api.create_namespaced_service_account(
             namespace,
             {
                 'apiVersion': 'v1',
                 'kind': 'ServiceAccount',
                 'metadata': {
-                    'generateName': name,
+                    'name': name,
                     'namespace': namespace,
                 },
             }
         )
         print("Created service account")
-        return service_account.metadata.name
+        return name
     except ApiException as e:
+        if e.status == 409:
+            print("Service account {} already exists".format(name))
+            return name
         raise e
 
 
@@ -603,6 +606,9 @@ def create_role_binding(name, namespace, service_account, role="admin"):
             }
         )
     except ApiException as e:
+        if e.status == 409:
+            print("Role binding {} already exists".format(name))
+            return name
         raise e
     except Exception as e:
         # TODO:
@@ -663,18 +669,22 @@ def create_pod(image, name, namespace, command, service_account):
 
 
 def watch_pod(name, namespace):
-    try:
-        kubernetes_config.load_kube_config()
-        api = kubernetes_client.CoreV1Api()
+    kubernetes_config.load_kube_config()
+    api = kubernetes_client.CoreV1Api()
 
-        while True:
-            pod_phase = api.read_namespaced_pod(name, namespace).status.phase
-            if pod_phase == 'Succeeded' or pod_phase == 'Failed':
-                return pod_phase
-            sleep(WATCH_POD_SLEEP)
-    except ApiException as e:
-        print("Get pod failure: {}".format(e))
-        raise e
+    while True:
+        pod_status = api.read_namespaced_pod(name, namespace).status
+        pod_phase = pod_status.phase
+        if pod_phase == 'Succeeded' or pod_phase == 'Failed':
+            return pod_phase
+        if pod_phase == 'Pending':
+            try:
+                reason = pod_status.container_statuses[0].state.waiting.reason
+            except ApiException:
+                pass
+            if reason == 'ImagePullBackOff':
+                raise ApiException("APB failed {} - check name".format(reason))
+        sleep(WATCH_POD_SLEEP)
 
 
 def run_apb(project, image, name, action, parameters={}):
@@ -1252,16 +1262,20 @@ def cmdrun_run(**kwargs):
                 "(required)" if 'required' in parm and parm['required'] else '',
                 "[default: {}]".format(parm['default']) if 'default' in parm else ''
             ))
-            # Take the default if nothing
-            if val == "" and 'default' in parm:
-                val = parm['default']
+            # Take the value if something
+            if val:
                 break
-            # If not required move on
-            if val == "" and ('required' not in parm) or (not parm['required']):
-                break
-            # Tell the user if the parameter is required
-            if val == "" and 'default' not in parm and 'required' in parm and parm['required']:
-                print("ERROR: Please provide value for required parameter")
+            else:
+                # Take the default if nothing
+                if 'default' in parm:
+                    val = parm['default']
+                    break
+                # If not required move on
+                if ('required' not in parm) or (not parm['required']):
+                    break
+                # Tell the user if the parameter is required
+                if 'default' not in parm and 'required' in parm and parm['required']:
+                    print("ERROR: Please provide value for required parameter")
         parameters[parm['name']] = val
 
     name, namespace = run_apb(
@@ -1276,4 +1290,9 @@ def cmdrun_run(**kwargs):
         return
 
     print("APB run started")
-    print("APB run complete: {}".format(watch_pod(name, namespace)))
+    try:
+        pod_completed = watch_pod(name, namespace)
+        print("APB run complete: {}".format(pod_completed))
+    except Exception as e:
+        print("APB run failed: {}".format(e))
+        exit(1)
