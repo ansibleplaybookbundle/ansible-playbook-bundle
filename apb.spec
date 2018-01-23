@@ -24,7 +24,7 @@
 %endif
 
 Name: apb
-Version: 1.1.5
+Version: 1.1.6
 Release: 1%{build_timestamp}%{?dist}
 Summary: Ansible Playbook Bundle (APB) is a lightweight application definition (meta-container).
 
@@ -98,6 +98,16 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/apb-wrapper
 
 %changelog
+* Tue Jan 23 2018 Jason Montleon <jmontleo@redhat.com> 1.1.6-1
+- Bug 1537599 Update the pod_exec call to use kubernetes 4.0 client (#196)
+  (cchase@redhat.com)
+- Bug 1536963 Updates required to work with openshift 0.4.0 (#209)
+  (jmontleo@redhat.com)
+- Update apb_cli.md (ernelson@redhat.com)
+- Bug 1536687 - Add minishift support (#207) (ernelson@redhat.com)
+- Add instructions for testing APBs with docker run. (#208)
+  (derekwhatley@gmail.com)
+
 * Wed Jan 17 2018 David Zager <david.j.zager@gmail.com> 1.1.5-1
 - Bug 1532972 - Replace needed subcommand argument (#202) (dymurray@redhat.com)
 
