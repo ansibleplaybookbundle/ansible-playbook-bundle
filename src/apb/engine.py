@@ -433,8 +433,8 @@ def broker_resource_url(host, broker_name):
 def relist_service_broker(kwargs):
     try:
         openshift_config.load_kube_config()
-        token = openshift_client.configuration.api_key['authorization']
-        cluster_host = openshift_client.configuration.host
+        token = openshift_client.Configuration().get_api_key_with_prefix('authorization')
+        cluster_host = openshift_client.Configuration().host
         broker_name = kwargs['broker_name']
         headers = {}
         if kwargs['basic_auth_username'] is not None and kwargs['basic_auth_password'] is not None:
@@ -758,7 +758,7 @@ def broker_request(broker, service_route, method, **kwargs):
                                                          kwargs['basic_auth_password']))
                        }
         else:
-            token = openshift_client.configuration.api_key.get("authorization", "")
+            token = openshift_client.Configuration().get_api_key_with_prefix('authorization')
             headers = {'Authorization': token}
         response = requests.request(method, url, verify=kwargs["verify"],
                                     headers=headers, data=kwargs.get("data"))
@@ -1091,7 +1091,7 @@ def cmdrun_push(**kwargs):
         client = create_docker_client()
         client.images.build(path=project, tag=tag, dockerfile=kwargs['dockerfile'])
         openshift_config.load_kube_config()
-        token = openshift_client.configuration.api_key['authorization'].split(" ")[1]
+        token = openshift_client.Configuration().get_api_key_with_prefix('authorization').split(" ")[1]
         username = "developer" if is_minishift() else "unused"
         client.login(username=username, password=token, registry=registry, reauth=True)
 

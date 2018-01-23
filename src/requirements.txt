@@ -1,6 +1,6 @@
 PyYAML>=3.10,<4.0
 docker>=2.1.0,<3.0.0
-openshift>=0.0.1
+openshift>=0.4.*
 Jinja2>=2.7.2
 requests>=2.6.0
 ruamel.yaml>=0.15
