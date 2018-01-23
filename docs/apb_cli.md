@@ -158,7 +158,7 @@ oc adm policy add-cluster-role-to-user cluster-admin <user>
 oc login -u <user>
 ```
 
-If you would like a more strictly permissioned environment, we have an [Openshift Template](templates/openshift-permissions.template.yaml)
+If you would like a more strictly permissioned environment, we have an [Openshift Template](../templates/openshift-permissions.template.yaml)
 available that can be applied with the following command:
 
 `oc process -f templates/openshift-permissions.template.yaml -p USER=<your_desired_user> | oc create -f -`.
