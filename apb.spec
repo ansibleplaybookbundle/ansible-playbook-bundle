@@ -24,7 +24,7 @@
 %endif
 
 Name: apb
-Version: 1.1.6
+Version: 1.1.7
 Release: 1%{build_timestamp}%{?dist}
 Summary: Ansible Playbook Bundle (APB) is a lightweight application definition (meta-container).
 
@@ -98,6 +98,19 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/apb-wrapper
 
 %changelog
+* Fri Feb 02 2018 David Zager <david.j.zager@gmail.com> 1.1.7-1
+- Bug 1540487 - Fix apb remove URL suffix (#222) (dymurray@redhat.com)
+- Bug 1541339 - Add action name to apb run pod (#221) (dymurray@redhat.com)
+- Bug 1523252 - Prepend broker route with https if no schema supplied (#220)
+  (dymurray@redhat.com)
+- Use the host network namespace with containerized apb-tool (#217)
+  (rhallise@redhat.com)
+- Bug 1538969 - Add version subcommand to CLI options (#219)
+  (dymurray@redhat.com)
+- Add support for minishift to apb container (#211) (ernelson@redhat.com)
+- Bug 1533318 - Use internal registry in apb run (#210)
+  (david.j.zager@gmail.com)
+
 * Tue Jan 23 2018 Jason Montleon <jmontleo@redhat.com> 1.1.6-1
 - Bug 1537599 Update the pod_exec call to use kubernetes 4.0 client (#196)
   (cchase@redhat.com)
