@@ -1353,7 +1353,8 @@ def create_docker_client():
         tls = docker.tls.TLSConfig(
             ca_cert=ca_cert,
             client_cert=(client_cert, client_key),
-            verify=True
+            verify=True,
+            assert_hostname=False
         )
         client = docker.DockerClient(tls=tls, base_url=docker_host, version='auto')
     else:
