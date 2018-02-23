@@ -1,13 +1,14 @@
 FROM centos:7
 
 RUN yum -y install epel-release centos-release-openshift-origin \
- && yum -y install python-virtualenv git sudo origin-clients \
+ && yum -y install python-virtualenv git sudo origin-clients wget \
  && yum clean all
 
-RUN virtualenv /opt/apb
-RUN git clone https://github.com/fusor/ansible-playbook-bundle
-RUN source /opt/apb/bin/activate \
- && pip install -U pip setuptools
+RUN virtualenv --no-setuptools /opt/apb
+RUN source /opt/apb/bin/activate && wget https://bootstrap.pypa.io/get-pip.py
+RUN source /opt/apb/bin/activate && python get-pip.py
+
+RUN git clone https://github.com/ansibleplaybookbundle/ansible-playbook-bundle
 RUN source /opt/apb/bin/activate \
  && cd ansible-playbook-bundle \
  && pip install websocket-client==0.40.0 \
