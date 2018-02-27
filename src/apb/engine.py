@@ -924,6 +924,23 @@ def get_registry(kwargs):
         return registry
 
 
+def delete_old_images(image_name):
+    try:
+        openshift_config.load_kube_config()
+        oapi = openshift_client.OapiApi()
+        image_list = oapi.list_image(_preload_content=False)
+        image_list = json.loads(image_list.data)
+        for image in image_list['items']:
+            image_fqn, image_sha = image['dockerImageReference'].split("@")
+            if image_name == image_fqn:
+                oapi.delete_image(name=image_sha, body={})
+
+    except Exception as e:
+        print("Exception deleting old images: %s" % e)
+        print("Not erroring out, this may cause duplicate images in the registry. Try: `oc get images`.")
+    return
+
+
 def push_apb(registry, tag):
     try:
         client = create_docker_client()
@@ -935,6 +952,7 @@ def push_apb(registry, tag):
         token = api_key.split(" ")[1]
         username = "developer" if is_minishift() else "unused"
         client.login(username=username, password=token, registry=registry, reauth=True)
+        delete_old_images(tag)
 
         print("Pushing the image, this could take a minute...")
         client.images.push(tag)
