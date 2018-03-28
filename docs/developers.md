@@ -2,6 +2,7 @@
 
 The APB developer guide provides an in depth guide to creating APBs. This guide will explain the fundamental components that make up an APB and is meant to help an experienced APB developer get a better understanding of each individual component within an APB. If you are looking to get more information on creating your first APB, take a look at our [getting started guide](https://github.com/ansibleplaybookbundle/ansible-playbook-bundle/blob/master/docs/getting_started.md).
 
+  1. [Directory Structure](#directory-structure)
   1. [Explanation of APB Spec File](#apb-spec-file)
   1. [Dockerfile](#dockerfile)
   1. [APB Actions (Playbooks)](#actions)
@@ -11,16 +12,17 @@ The APB developer guide provides an in depth guide to creating APBs. This guide 
      * [DeploymentConfig](#deployment-config)
      * [Route](#route)
      * [PersistentVolume](#persistent-volume)
-  1. [APB Spec Version](#apb-spec-versioning)
+  1. [Custom Error Message](#custom-error-message)
   1. [Tips & Tricks](#tips-and-tricks)
      * [Optional Variables](#optional-variables)
      * [Working with Restricted SCC](#working-with-the-restricted-scc)
      * [Using a ConfigMap](#using-a-configmap-within-an-apb)
      * [Testing APBs with docker run](#using-docker-run-to-quickly-test-an-apb)
      * [Developing APBs for Use in Proxied Environments](#developing-apbs-for-use-in-proxied-environments)
-
+  1. [APB Spec Version](#apb-spec-versioning)
 
 ## APB Examples
+
 For completed APB examples, take a look at some of the APBs in the [ansibleplaybookbundle org](https://github.com/ansibleplaybookbundle)
 * [hello-world-apb](https://github.com/ansibleplaybookbundle/hello-world-apb)
 * [hello-world-db-apb](https://github.com/ansibleplaybookbundle/hello-world-db-apbb)
@@ -40,8 +42,10 @@ For completed APB examples, take a look at some of the APBs in the [ansibleplayb
 * [rhscl-mysql-apb](https://github.com/ansibleplaybookbundle/rhscl-mysql-apb)
 * [rds-postgres-apb](https://github.com/ansibleplaybookbundle/rds-postgres-apb)
 
-##### Directory Structure
+## Directory Structure
+
 The following shows an example directory structure of an APB.
+
 ```bash
 example-apb/
 ├── Dockerfile
@@ -59,7 +63,8 @@ example-apb/
     └── unbind.yml
 ```
 
-# APB Spec File
+## APB Spec File
+
 The APB Spec File (`apb.yml`) is where the outline of your application is declared.  The following is an example APB spec
 
 ```yaml
@@ -96,7 +101,9 @@ plans:
         title: Parameter Two
         type: boolean
 ```
-## Top level structure
+
+### Top level structure
+
 * `version`: Version of the APB spec. Please see [versioning](#apb-spec-versioning) for more information.
 * `name`: Name of the APB. Names must be valid ASCII and may contain lowercase letters, digits, underscores, periods and dashed. Please see [Docker's guidelines](https://docs.docker.com/engine/reference/commandline/tag/#extended-description) for valid tag names.
 * `description`: Short description of this APB.
@@ -105,7 +112,7 @@ plans:
 * `metadata`: A dictionary field declaring relevant metadata information. Please see the [metadata section](#metadata) for more information.
 * `plans`: A list of plans that can be deployed. Please see the [plans section](#plans) for more information.
 
-### Metadata
+#### Metadata
 
 * `documentationUrl`: URL to the applications documentation.
 * `imageUrl`: URL to an image which will be displayed in the WebUI for the Service Catalog.
@@ -114,21 +121,26 @@ plans:
 * `longDescription`: Longer description that will be displayed when the APB is clicked in the WebUI.
 * `providerDisplayName`: Name of who is providing this APB for consumption.
 
-### Plans
+#### Plans
+
 Plans are declared as a list. This section will explain what each field in a plan describes.
+
 * `name`: Unique name of plan to deploy. This will be displayed when the APB is clicked from the Service Catalog.
 * `description`: Short description of what will be deployed from this plan.
 * `free`: Boolean field to determine if this plan is free or not. Accepted fields are `true` or `false`.
 * `metadata`: Dictionary field declaring relevant plan metadata information. Please see the [plan metadata section](#plan-metadata)
 * `parameters`: List of parameter dictionaries used as input to the APB. Please see the [parameters section](#parameters)
 
-### Plan Metadata
+#### Plan Metadata
+
 * `displayName`: Name to display for the plan in the WebUI.
 * `longDescription`: Longer description of what this plan deploys.
 * `cost`: How much the plan will cost to deploy. Accepted field is `$x.yz`
 
-### Parameters
+#### Parameters
+
 Each item in the `parameters` section can have several fields.  `name` is required.  The order of the parameters will be displayed in sequential order in the form in the OpenShift UI.
+
 ```yaml
 parameters:
   - name: my_param
@@ -140,6 +152,7 @@ parameters:
     display_type: select
     display_group: Group 1
 ```
+
 * `name`: Unique name of the parameter passed into the APB
 * `title`: Displayed label in the UI.
 * `type`: Data type of the parameters as specified by [json-schema](http://json-schema.org/) such as `string`, `number`, `int`, `boolean`, or `enum`.  Default input field type in the UI will be assigned if no `display_type` is assigned.
@@ -150,13 +163,15 @@ parameters:
 
 When using a long list of parameters it might be useful to use a shared parameter list. For an example of this, please see [rhscl-postgresql-apb](https://github.com/ansibleplaybookbundle/rhscl-postgresql-apb/blob/master/apb.yml#L4) for an example.
 
-## Kubernetes and Openshift
+### Kubernetes and Openshift
+
 The Ansible Service Broker is capable of running on both OpenShift and Kubernetes.
 Since each runtime uses different ansible modules, the variable ```cluster``` is
 used to distinguish between which playbook is run.
 
 In this example provision.yaml, the default playbook is set to Kubernetes, but
 the playbook that gets run is determined by ```--extra-vars cluster=<runtime>```:
+
 ```yaml
 - name: Provisioning app to "{{ cluster }}"
   hosts: localhost
@@ -173,6 +188,7 @@ the playbook that gets run is determined by ```--extra-vars cluster=<runtime>```
 For a full example of how this works, see the [mediawiki-apb](https://github.com/ansibleplaybookbundle/mediawiki-apb).
 
 ## Dockerfile
+
 The Dockerfile is what's used to actually build the APB image.  As a result, sometimes you will need to customize it for your own needs.  For example, if running a playbook that requires interactions with PostgreSQL, you may want to install the required packages by adding the `yum install`.
 
 ```yaml
@@ -195,15 +211,18 @@ USER apb
 ```
 
 ## Actions
+
 An action for an APB is the command that the APB is run with. 5 standard actions that we support are `provision`, `deprovision`, `bind`, `unbind`, and `test`. For an action to be valid there must be a valid file in the `playbooks` directory named `<action>.yml`. These playbooks can do anything which also means that you can technically create any action you would like. Our [mediawiki-apb](https://github.com/ansibleplaybookbundle/mediawiki123-apb/blob/master/playbooks/update.yml) has an example of creating an action `update`.
 
 Most APBs will normally have a `provision` to create resources and a `deprovision` action to destroy the resources when deleting the service.
 
 <a id="binding-credentials"></a>
-`bind` and `unbind` are used when the coordinates of one service needs to be made available to another service.  This is often the case when creating a data service and making it available to an application.  There are future plans to asynchronously execute `bind` and `unbind` playbooks, but currently, the coordinates are made available during the provision.  
+
+`bind` and `unbind` are used when the coordinates of one service needs to be made available to another service.  This is often the case when creating a data service and making it available to an application.  There are future plans to asynchronously execute `bind` and `unbind` playbooks, but currently, the coordinates are made available during the provision.
 
 To properly make our coordinates available to another service, we use the `asb_encode_binding` module. This module should be called at the end of the APBs provision role and it will return bind credentials to the Ansible Service Broker.
-```
+
+```yaml
 - name: encode bind credentials
   asb_encode_binding:
     fields:
@@ -211,14 +230,16 @@ To properly make our coordinates available to another service, we use the `asb_e
       EXAMPLE_FIELD2: foo2
 ```
 
+## Working with Common Resources
 
-# Working with Common Resources
 Below is a list of common resources that are created when developing APBs. Please see the [Ansible Kubernetes Module](https://github.com/ansible/ansible-kubernetes-modules/tree/master/library) for a full list of available resource modules.
 
-## Service
+### Service
+
 The following is a sample ansible task to create a service named `hello-world`. It is worth noting that the `namespace` variable in an APB will be provided by the Ansible Service Broker when launched from the WebUI.
 
 * Provision
+
 ```yaml
 - name: create hello-world service
   k8s_v1_service:
@@ -237,6 +258,7 @@ The following is a sample ansible task to create a service named `hello-world`. 
 ```
 
 * Deprovision
+
 ```yaml
 - k8s_v1_service:
     name: hello-world
@@ -244,10 +266,12 @@ The following is a sample ansible task to create a service named `hello-world`. 
     state: absent
 ```
 
-## Deployment Config
+### Deployment Config
+
 The following is a sample ansible task to create a deployment config for the image: `docker.io/ansibleplaybookbundle/hello-world` which maps to service `hello-world`.
 
 * Provision
+
 ```yaml
 - name: create deployment config
   openshift_v1_deployment_config:
@@ -273,6 +297,7 @@ The following is a sample ansible task to create a deployment config for the ima
 ```
 
 * Deprovision
+
 ```yaml
 - openshift_v1_deployment_config:
     name: hello-world
@@ -280,9 +305,12 @@ The following is a sample ansible task to create a deployment config for the ima
     state: absent
 ```
 
-## Route
+### Route
+
 The following is an example of creating a route named `hello-world` which maps to service `hello-world`.
+
 * Provision
+
 ```yaml
 - name: create hello-world route
   openshift_v1_route:
@@ -296,6 +324,7 @@ The following is an example of creating a route named `hello-world` which maps t
 ```
 
 * Deprovision
+
 ```yaml
 - openshift_v1_route:
     name: hello-world
@@ -303,9 +332,12 @@ The following is an example of creating a route named `hello-world` which maps t
     state: absent
 ```
 
-## Persistent Volume
+### Persistent Volume
+
 The following is an example of creating a persistent volume claim resource and deployment config that uses it.
+
 * Provision
+
 ```yaml
 # Persistent volume resource
 - name: create volume claim
@@ -335,6 +367,7 @@ The following is an example of creating a persistent volume claim resource and d
 ```
 
 * Deprovision
+
 ```yaml
 - openshift_v1_deployment_config:
     name: hello-world-db
@@ -348,10 +381,12 @@ The following is an example of creating a persistent volume claim resource and d
 
 ```
 
-# Tips and Tricks
+## Tips and Tricks
 
-## Optional Variables
+### Optional Variables
+
 You can add optional variables to an Ansible Playbook Bundle by using environment variables. To pass variables into an APB, you will need to escape the variable substitution in your `.yml` files. For example, the section below is of [main.yml](https://github.com/fusor/apb-examples/blob/master/etherpad-apb/roles/provision-etherpad-apb/tasks/main.yml#L89) in the [etherpad-apb](https://github.com/fusor/apb-examples/tree/master/etherpad-apb):
+
 ```yaml
 - name: create mariadb deployment config
   openshift_v1_deployment_config:
@@ -383,8 +418,8 @@ etherpad_db_host: "{{ lookup('env','ETHERPAD_DB_HOST') | default('mariadb', true
 state: present
 ```
 
+### Working with the restricted scc
 
-## Working with the restricted scc
 When building an OpenShift image, it is important that we do not have our application running as the root user when at all possible. When running under the restriced security context, the application image is launched with a random UID. This will cause problems if your application folder is owned by the root user. A good way to work around this is to add a user to the root group and make the application folder owned by the root group. A very good article on how to support Arbitrary User IDs is shown [here](https://docs.openshift.org/latest/creating_images/guidelines.html#openshift-origin-specific-guidelines). The following is a Dockerfile example of a node app running in `/usr/src`. This command would be run after the application is installed in `/usr/src` and the associated environment variables set.
 
 ```Dockerfile
@@ -398,7 +433,8 @@ RUN useradd -u ${USER_UID} -r -g 0 -M -d /usr/src -b /usr/src -s /sbin/nologin -
 USER 1001
 ```
 
-## Using a ConfigMap within an APB
+### Using a ConfigMap within an APB
+
 There is a temporary workaround we are using to create configmaps from ansible due to a bug in the Ansible modules.
 
 One common use case for ConfigMaps is when the parameters of an APB will be used within a configuration file of an application or service. The ConfigMap module allows you to mount a ConfigMap into a pod as a volume which can be used to store the config file. This approach allows you to also leverage the power Ansible's `template` module to create a ConfigMap out of APB paramters. The following is an example of creating a ConfigMap from a jinja template mounted into a pod as a volume.
@@ -454,14 +490,15 @@ One common use case for ConfigMaps is when the parameters of an APB will be used
 
 ```
 
-## Using docker run to quickly test an APB
+### Using docker run to quickly test an APB
+
 While developing APBs, you may want to quickly test an APB without involving the Ansible Service Broker or Service Catalog. This can be accomplished by using a `docker run` command.
 
 Before continuing, run `oc login` and provide credentials for a cluster-admin user. This method of APB invocation mounts `~/.kube` into the APB container for authentication.
 
 The example below shows a generic `docker run` command with placeholders for an `$APB_IMAGE_NAME`, `$ACTION_NAME`, and `extra-vars`.
 
-```
+```bash
 docker run --rm --net=host -v $HOME/.kube:/opt/apb/.kube:z -u $UID \
 $APB_IMAGE_NAME \
 $ACTION_NAME \
@@ -471,7 +508,8 @@ $ACTION_NAME \
 ```
 
 The next example shows a `docker run` command which will perform the `provision` action of the MediaWiki APB, with necessary values substituted in.
-```
+
+```bash
 docker run --rm --net=host -v $HOME/.kube:/opt/apb/.kube:z -u $UID \
 docker.io/ansibleplaybookbundle/mediawiki-apb:latest \
 provision \
@@ -483,7 +521,8 @@ provision \
 --extra-vars 'mediawiki_site_lang=en'
 ```
 
-## Developing APBs for Use in Proxied Environments
+### Developing APBs for Use in Proxied Environments
+
 The broker will pass its proxy settings to APB action pods (e.g. provision, deprovision, bind, unbind, update) as environment variables. We have found that there is little consensus on proxy settings being read from uppercase vs. lowercase environment variables (e.g. http_proxy vs. HTTP_PROXY), so the broker assigns the same values to both within each APB action pod, as shown below.
 
 ```bash
@@ -505,7 +544,8 @@ set_fact:
   no_proxy: {{ lookup('env', 'no_proxy') }}
 ```
 
-### Passing Proxy Settings to Child Pods
+#### Passing Proxy Settings to Child Pods
+
   You might want to pass proxy settings through to child pods created by an APB action pod. Edit the provision action of your APB, navigating to the section defining the deployment config that will be created for the child pod. Copy the APB action pod proxy vars to the `env` section of the container definition as shown below.
 
 ```yaml
@@ -545,6 +585,7 @@ parameters:
 ```
 
 Then, in the APB's provision tasks:
+
 ```yaml
 
   - name: Create DC without proxy passthrough
@@ -577,19 +618,47 @@ Then, in the APB's provision tasks:
     when: proxy_passthrough
 ```
 
-# APB Spec Versioning
+## Custom Error Message
+
+A custom error message can be displayed when a failure occurs in the APB. This can be achieved by the pod writing out to its *termination log* which is by default `/dev/termination-log`.
+
+When the APB fails, the broker will pass the contents of the pod's termination log to the service catalog (if it exists), and the contents of the termination log will be displayed on the WebUI.  If the termination log is empty, a generic error message would be displayed.
+
+The below shows how this can be achieved in an APB. It captures the task in a `block` and `rescue`:
+
+```yaml
+  - block:
+      - name: Creating a DC
+        openshift_v1_deployment_config:
+          [...]
+    rescue:
+      ####################################
+      # Custom Error Message
+      ####################################
+      - name: Writing Termination Message '/dev/termination-log'
+        shell: echo "[Creating a DC Error] - {{ ansible_failed_result.msg }}" > /dev/termination-log
+
+      - fail: msg="[APB Failed! - Plan - '{{ _apb_plan_id }}'] "
+```
+
+## APB Spec Versioning
+
 We are using semantic versioning with the format of x.y where x is a major release and y is a minor release.
 
 The current spec version is 1.0.
 
-## Major Version Bump
+### Major Version Bump
+
 We will increment the major version whenever an API breaking change is introduced to the APB spec. Some examples include:
+
 * Introduction/deletion of a required field
 * Changing the yaml format
 * New features
 
-## Minor Version Bump
+### Minor Version Bump
+
 We will increment the minor version whenever a non-breaking change is introduced to the APB spec. Some examples include:
+
 * Introduction/deletion of an optional field
 * Spelling change
 * Introduction of new options to an existing field
