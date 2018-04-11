@@ -24,7 +24,7 @@
 %endif
 
 Name: apb
-Version: 1.2.0
+Version: 1.2.1
 Release: 1%{build_timestamp}%{?dist}
 Summary: Ansible Playbook Bundle (APB) is a lightweight application definition (meta-container).
 
@@ -98,6 +98,22 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/apb-wrapper
 
 %changelog
+* Wed Apr 11 2018 David Zager <david.j.zager@gmail.com> 1.2.1-1
+- Update developers.md to include parameter validation information (#260)
+  (dymurray@redhat.com)
+- Bump version (#255) (dzager@redhat.com)
+- Add a command to refresh all the catalog data (#259) (rhallise@redhat.com)
+- Bug 1554138 - Address potential issue where user is forbidden from broker
+  namespace (#250) (dymurray@redhat.com)
+- add instructions for custom error message (#248) (jkim@redhat.com)
+- chore: Minor doc fixes + fix of an error message (#249) (roland@ro14nd.de)
+- Add docs teaching APB authors how to consume proxy settings. (#247)
+  (derekwhatley@gmail.com)
+- Bug 1476330 - Add a check for 3.7 development endpoint (#246)
+  (dymurray@redhat.com)
+- Openshift doc changed, and routes are now on the network section
+  (#239) (matzew@apache.org)
+
 * Mon Mar 05 2018 David Zager <david.j.zager@gmail.com> 1.1.15-1
 - Bug 1550017 - Add ability to remove locally pushed APBs (#240)
   (dymurray@redhat.com)
