@@ -24,7 +24,7 @@
 %endif
 
 Name: apb
-Version: 1.2.1
+Version: 1.2.2
 Release: 1%{build_timestamp}%{?dist}
 Summary: Ansible Playbook Bundle (APB) is a lightweight application definition (meta-container).
 
@@ -98,6 +98,11 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/apb-wrapper
 
 %changelog
+* Thu Apr 19 2018 David Zager <david.j.zager@gmail.com> 1.2.2-1
+- Bug 1569220 - Add developer documentation on using asb_dashboard_url (#264)
+  (dymurray@redhat.com)
+- Fix links to ASB (#262) (SaravanaStorageNetwork@users.noreply.github.com)
+
 * Wed Apr 11 2018 David Zager <david.j.zager@gmail.com> 1.2.1-1
 - Update developers.md to include parameter validation information (#260)
   (dymurray@redhat.com)
