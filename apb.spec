@@ -24,7 +24,7 @@
 %endif
 
 Name: apb
-Version: 1.2.2
+Version: 1.2.3
 Release: 1%{build_timestamp}%{?dist}
 Summary: Ansible Playbook Bundle (APB) is a lightweight application definition (meta-container).
 
@@ -98,6 +98,15 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/apb-wrapper
 
 %changelog
+* Wed Apr 25 2018 David Zager <david.j.zager@gmail.com> 1.2.3-1
+-  Don't force the use of the containerised apb tools in Makefile commands, apb
+  should be installed locally using one of the recommended approaches
+  https://github.com/ansibleplaybookbundle/ansible-playbook-
+  bundle/blob/master/docs/apb_cli.md#installing-the-apb-tool (#263)
+  (m.nairn@gmail.com)
+- Added fix if using pip newer than 9.0.3 (#266) (jwmatthews@gmail.com)
+- Add example using oc new-app instead of apb push (#257) (dymurray@redhat.com)
+
 * Thu Apr 19 2018 David Zager <david.j.zager@gmail.com> 1.2.2-1
 - Bug 1569220 - Add developer documentation on using asb_dashboard_url (#264)
   (dymurray@redhat.com)
