@@ -24,7 +24,7 @@
 %endif
 
 Name: apb
-Version: 1.2.7
+Version: 1.2.8
 Release: 1%{build_timestamp}%{?dist}
 Summary: Ansible Playbook Bundle (APB) is a lightweight application definition (meta-container).
 
@@ -97,6 +97,14 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/apb-wrapper
 
 %changelog
+* Thu May 10 2018 David Zager <david.j.zager@gmail.com> 1.2.8-1
+- Bug 1572452 - Change --secure option to specify CA cert (#285)
+  (dymurray@redhat.com)
+- [jjo] apb-docker-run.sh: support $KUBECONFIG, fixes #287 (#288)
+  (juanjosec@gmail.com)
+- add Bearer string (#284) (1196037552@qq.com)
+- Add some helpful aliases (#282) (rhallise@redhat.com)
+
 * Fri May 04 2018 David Zager <david.j.zager@gmail.com> 1.2.7-1
 - Update documentation for apb remove (#281) (dymurray@redhat.com)
 - Bug 1573714 - PoC token arg support (#258) (akostadinov@gmail.com)
