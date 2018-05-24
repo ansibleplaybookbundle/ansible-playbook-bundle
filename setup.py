@@ -16,7 +16,7 @@ except NameError:
 
 setup(
     name="apb",
-    version="1.2.8",
+    version="1.2.9",
     description="Tooling for managing Ansible Playbook Bundle (APB) projects",
     author="Fusor",
     author_email="ansible-service-broker@redhat.com",
