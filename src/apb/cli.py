@@ -628,9 +628,63 @@ def subcmd_help_parser(subcmd):
     return
 
 
+# BZ 1581651 - Override the ArgumentParser to disable argument abbreviations.
+class OverrideArgumentParser(argparse.ArgumentParser):
+    """
+    HACK: in order to disable abbreviation we are disabling the startswith for
+    the options
+    """
+    def _get_option_tuples(self, option_string):
+        result = []
+
+        # option strings starting with two prefix characters are only
+        # split at the '='
+        chars = self.prefix_chars
+        if option_string[0] in chars and option_string[1] in chars:
+            if '=' in option_string:
+                option_prefix, explicit_arg = option_string.split('=', 1)
+            else:
+                option_prefix = option_string
+                explicit_arg = None
+            for option_string in self._option_string_actions:
+                # HACK original line: if option_string.startswith(option_prefix):
+                if option_string == option_prefix:
+                    action = self._option_string_actions[option_string]
+                    tup = action, option_string, explicit_arg
+                    result.append(tup)
+
+        # single character options can be concatenated with their arguments
+        # but multiple character options always have to have their argument
+        # separate
+        elif option_string[0] in chars and option_string[1] not in chars:
+            option_prefix = option_string
+            explicit_arg = None
+            short_option_prefix = option_string[:2]
+            short_explicit_arg = option_string[2:]
+
+            for option_string in self._option_string_actions:
+                if option_string == short_option_prefix:
+                    action = self._option_string_actions[option_string]
+                    tup = action, option_string, short_explicit_arg
+                    result.append(tup)
+                # HACK original line: elif option_string.startswith(option_prefix):
+                elif option_string == option_prefix:
+                    action = self._option_string_actions[option_string]
+                    tup = action, option_string, explicit_arg
+                    result.append(tup)
+
+        # shouldn't ever get here
+        else:
+            self.error(_('unexpected option string: %s') % option_string) ## noqa
+
+        # return the collected option tuples
+        return result
+
+
 def main():
     """ main """
-    parser = argparse.ArgumentParser(
+    # BZ 1581651 - Override the ArgumentParser to disable argument abbreviations.
+    parser = OverrideArgumentParser(
         description=u'APB tooling for '
         u'assisting in building and packaging APBs.'
     )
