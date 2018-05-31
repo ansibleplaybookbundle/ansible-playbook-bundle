@@ -382,22 +382,18 @@ def get_registry_service_ip(namespace, svc_name):
 def get_asb_route():
     asb_route = None
     route_list = None
-    try:
-        openshift_config.load_kube_config()
-        oapi = openshift_client.OapiApi()
-        route_list = oapi.list_namespaced_route('ansible-service-broker')
-    except ApiException as e:
-        print("Didn't find OpenShift Ansible Broker route in namespace: ansible-service-broker.\
-                Reason: [%s]. Trying namespace: openshift-ansible-service-broker" % e.reason)
-
-    if route_list is None or route_list.items == []:
+    possible_namespaces = ["ansible-service-broker", "openshift-ansible-service-broker",
+                           "openshift-automation-service-broker"]
+    for namespace in possible_namespaces:
         try:
             openshift_config.load_kube_config()
             oapi = openshift_client.OapiApi()
-            route_list = oapi.list_namespaced_route('openshift-ansible-service-broker')
+            route_list = oapi.list_namespaced_route(namespace)
+            if route_list.items != []:
+                break
         except ApiException as e:
-            print("Unable to find OpenShift Ansible Broker route. Reason: [%s]." % e.reason)
-            return None
+            print("Didn't find OpenShift Automation Broker route in namespace: %s.\
+                    Reason: [%s]. Trying alternative namespaces." % namespace, e.reason)
 
     if route_list.items == []:
         print("No routes found in broker namespaces.")
@@ -407,7 +403,11 @@ def get_asb_route():
         if 'asb' in route.metadata.name and 'etcd' not in route.metadata.name:
             asb_route = route.spec.host
 
-    url = asb_route + "/ansible-service-broker"
+    if asb_route is None:
+        print("Error finding a route to the OpenShift Automation Broker.")
+        return None
+
+    url = asb_route + "/openshift-automation-service-broker"
     if url.find("http") < 0:
         url = "https://" + url
 
@@ -742,11 +742,6 @@ def broker_request(broker, service_route, method, **kwargs):
     if broker is None:
         raise Exception("Could not find route to ansible-service-broker. "
                         "Use --broker or log into the cluster using \"oc login\"")
-
-    if not broker.endswith('/ansible-service-broker'):
-        if not broker.endswith('/'):
-            broker = broker + '/'
-        broker = broker + 'ansible-service-broker'
 
     if not broker.startswith('http'):
         broker = 'https://' + broker
